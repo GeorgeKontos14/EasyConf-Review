@@ -4,7 +4,7 @@ info:
   description: the OpenAPI specification of the review microservice
   version: 1.0.0
 servers:
-  - url: 'https'
+  - url: 'http://localhost:8084'
 paths:
   /review/findAllReviewsByUserID:
     get:
