@@ -423,7 +423,53 @@ paths:
         500:
           description: server error
 
+  /analytics/getNumberAccepted:
+    get:
+      summary: "Returns the number of accepted papers"
+      description: "Returns how many papers have been accepted by the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
 
+  /analytics/getNumberRejected:
+    get:
+      summary: "Returns the number of rejected papers"
+      description: "Returns how many papers have been rejected by the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
+
+  /analytics/getNumberUndecided:
+    get:
+      summary: "Returns the number of undecided papers"
+      description: "Returns how many papers have no final verdict upon their acceptance from the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
 
 
 components:
