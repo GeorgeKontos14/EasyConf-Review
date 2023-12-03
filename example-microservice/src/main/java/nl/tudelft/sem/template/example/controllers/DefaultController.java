@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Hello World example controller.
- * <p>
- * This controller shows how you can extract information from the JWT token.
- * </p>
+ * Main Controller of the 'Reviews' Microservice
  */
 @RestController
 public class DefaultController {
@@ -27,15 +24,6 @@ public class DefaultController {
         this.authManager = authManager;
     }
 
-    /**
-     * Gets example by id.
-     *
-     * @return the example found in the database with the given id
-     */
-    @GetMapping("/hello")
-    public ResponseEntity<String> helloWorld() {
-        return ResponseEntity.ok("Hello " + authManager.getNetId());
 
-    }
 
 }
