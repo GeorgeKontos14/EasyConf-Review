@@ -532,6 +532,9 @@ paths:
               application/json:
                 schema:
                   type: array
+                  items:
+                    $ref: '#/components/schemas/Paper'
+
           400:
             description: invalid input
           404:
@@ -653,18 +656,18 @@ components:
             - Cannot review
             - Neutral
           example: Neutral
-    Reviewer_Comment:
+    Comment:
       type: object
       properties:
         id:
           type: integer
           format: int32
-          description: The unique id of the comment by a reviewer on a given paper
+          description: The unique id of the comment
           example: 431207
-        reviewer_id:
+        author_id:
           type: integer
           format: int32
-          description: The id of the reviewer giving a comment
+          description: The id of the user giving a comment
           example: 345
         text:
           type: string
@@ -687,42 +690,12 @@ components:
           format: int32
           description: the unique id of the comment by a PC chair on a given review
           example: 95
-        pc_chair_id:
-          type: integer
-          format: int32
-          description: the id of the PC chair who comments
-          example: 2565
         review_id:
           type: integer
           format: int32
           description: the id of the review that is to be commented
           example: 88764
-        comment:
-          type: string
-          description: the contents of the comment.
-          example: Could you please explain more what you do not like about the research method, you only briefly say that you do not like it
-    Pc_chair_paper_comment:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: the unique id of the comment by a PC Chair on a given paper
-          example: 721806
-        pc_chair_id:
-          type: integer
-          format: int32
-          description: the id of the PC chair who comments
-          example: 50382
-        paper_id:
-          type: integer
-          format: int32
-          description: the id of the paper that is to be commented
-          example: 875190
-        comment:
-          type: string
-          description: the contents of the comment.
-          example: put an example here
+
     Oversees:
       type: object
       properties:
