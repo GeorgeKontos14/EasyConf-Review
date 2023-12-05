@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Main Controller of the 'Reviews' Microservice
+ * Main Controller of the 'Reviews' Microservice.
  */
 @RestController
 public class DefaultController {
