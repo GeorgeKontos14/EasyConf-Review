@@ -633,6 +633,8 @@ paths:
           description: The review objects with papers assigned to reviewers
           schema:
             type: array
+            items:
+              $ref: '#/components/schemas/Review'
       responses:
         200:
           description: Successful Response
