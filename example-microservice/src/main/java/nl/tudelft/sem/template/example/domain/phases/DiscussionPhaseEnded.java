@@ -4,6 +4,7 @@ import lombok.Getter;
 /**
  * A DDD domain event that indicated the discussion phase has ended.
  */
+
 @Getter
 public class DiscussionPhaseEnded {
     private final int trackId;
