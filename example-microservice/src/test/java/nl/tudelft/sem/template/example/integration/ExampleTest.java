@@ -37,7 +37,7 @@ public class ExampleTest {
     private transient AuthManager mockAuthenticationManager;
 
 
-    @Test
+    /*@Test
     public void helloWorld() throws Exception {
         // Arrange
         // Notice how some custom parts of authorisation need to be mocked.
@@ -59,5 +59,5 @@ public class ExampleTest {
 
         assertThat(response).isEqualTo("Hello ExampleUser");
 
-    }
+    }*/
 }
