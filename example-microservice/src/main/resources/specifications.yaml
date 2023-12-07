@@ -611,6 +611,38 @@ paths:
           500:
             description: server error
 
+  /review/assignPapers:
+    post:
+      summary: Manually assign papers for review
+      tags:
+        - Review
+      description: Post the review assignments that have been manually made by the chair
+      parameters:
+        - name: trackID
+          in: query
+          description: The id of the track
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          description: The user ID, used for verification
+          schema:
+            type: integer
+        - name: reviews
+          in: query
+          description: The review objects with papers assigned to reviewers
+          schema:
+            type: array
+      responses:
+        200:
+          description: Successful Response
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
+
   /review/startBiddingForTrack:
     get:
       summary: Signal that the bidding period should start for a specific track
