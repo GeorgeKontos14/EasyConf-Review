@@ -10,6 +10,8 @@ paths:
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
+      tags:
+        - Review
       parameters:
         - name: userID
           in: query
@@ -39,6 +41,8 @@ paths:
     get:
       summary: Find all reviews that belong to a paper
       description: Given the id of a paper this returns all reviews that have been written for that paper
+      tags:
+        - Review
       parameters:
         - name: paperID
           in: query
@@ -74,6 +78,8 @@ paths:
     get:
       summary: Find all preferences that belong to a reviewer
       description: Given the id of a reviewer, this returns the preference for each paper for that reviewer
+      tags:
+        - Review
       parameters:
         - name: reviewerID
           in: query
@@ -102,6 +108,8 @@ paths:
   /review/findPaperByReviewId:
     get:
       summary: Find the paper for which the review was made
+      tags:
+        - Review
       description: Given the id of a review, this returns the paper for which the review was made
       parameters:
         - name: reviewID
@@ -135,6 +143,8 @@ paths:
   /review/editConfidenceScore:
     put:
       summary: Update confidence score
+      tags:
+        - Review
       description: Update the confidence score by reviewID
       parameters:
         - name: userID
@@ -169,6 +179,8 @@ paths:
   /review/editOverallScore:
     put:
       summary: Update overall score
+      tags:
+        - Review
       description: Update the overall score by ReviewID
       parameters:
         - name: userID
@@ -202,7 +214,9 @@ paths:
 
   /review/postComment:
     post:
-      summary: post a comment on a review
+      summary: Post a comment on a review
+      tags:
+        - Review
       description: post a comment on a review
       parameters:
         - name: userID
@@ -235,6 +249,8 @@ paths:
   /paper/getPaperByID:
     get:
       summary: Gets a paper with a given ID
+      tags:
+        - Paper
       description: Given a specific id, return the paper with that id, if any
       parameters:
         - name: PaperID
@@ -270,6 +286,8 @@ paths:
   /paper/getAllPapersForID:
     get:
       summary: Gets all papers that are to be reviewed by a specific reviewer
+      tags:
+        - Paper
       description: Get all the papers for which the review is assigned to a reviewer with a given reviewer id
       parameters:
         - name: reviewer_id
@@ -299,6 +317,8 @@ paths:
   /paper/getPaperReviews:
     get:
       summary: Gets the reviews for a paper
+      tags:
+        - Paper
       description: For a given paper ID, returns the list of 3 reviews associated to that paper
       parameters:
         - name: paperId
@@ -334,6 +354,8 @@ paths:
   /paper/getPaperComments:
     get:
       summary: Get comments for this paper
+      tags:
+        - Paper
       description: Given the paper ID, return a list of all comments made on this specific paper that are accessible by the given user
       parameters:
         - name: paperID
@@ -365,6 +387,8 @@ paths:
   /paper/getPreferencesByPaper:
     get:
       summary: Gets a list of user-preference pairs for this paper
+      tags:
+        - Paper
       description: Given a paper id, return a list of pairs of reviewer ids and their preference for this specific paper.
       parameters:
         - name: paperID
@@ -393,6 +417,8 @@ paths:
   /paper/updatePaperStatus:
     put:
       summary: Updates a paper with provided ID with the provided new status
+      tags:
+        - Paper
       description: Update the 'status' field of the paper with provided id with a new status
       parameters:
         - name: paperID
@@ -426,6 +452,8 @@ paths:
   /paper/postPreferenceScore:
     post:
       summary: The reviewers post their preference on a paper
+      tags:
+        - Paper
       description: The reviewers can post whether they can or cannot review a given paper. They can either express they can review, they cannot review and they are neutral
       parameters:
         - name: reviewer_id
@@ -463,6 +491,8 @@ paths:
   /analytics/getNumberAccepted:
     get:
       summary: "Returns the number of accepted papers"
+      tags:
+        - Analytics
       description: "Returns how many papers have been accepted by the conference"
       responses:
         200:
@@ -479,6 +509,8 @@ paths:
   /analytics/getNumberRejected:
     get:
       summary: "Returns the number of rejected papers"
+      tags:
+        - Analytics
       description: "Returns how many papers have been rejected by the conference"
       responses:
         200:
@@ -495,6 +527,8 @@ paths:
   /analytics/getNumberUndecided:
     get:
       summary: "Returns the number of undecided papers"
+      tags:
+        - Analytics
       description: "Returns how many papers have no final verdict upon their acceptance from the conference"
       responses:
         200:
@@ -511,6 +545,8 @@ paths:
   /paper/getTitleAndAbstract:
     get:
         summary: "Returns the abstract and the title of a paper"
+        tags:
+          - Paper
         description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
         parameters:
           - name: paperID
@@ -545,6 +581,8 @@ paths:
   /review/getBiddingDeadline:
     get:
       summary: Give the bidding phase deadline
+      tags:
+        - Review
       description: For a given track, return the deadline for bidding
       parameters:
         - name: trackID
@@ -573,6 +611,25 @@ paths:
           500:
             description: server error
 
+  /review/startBiddingForTrack:
+    get:
+      summary: Signal that the bidding period should start for a specific track
+      tags:
+        - Review
+      description: For a given track, mark internally that the bidding phase for that track should start
+      parameters:
+        - name: trackID
+          in: query
+          description: The id of the track
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful Response
+        400:
+          description: invalid input
+        500:
+          description: server error
 
 
 
