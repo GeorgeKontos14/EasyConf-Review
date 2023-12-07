@@ -4,6 +4,7 @@ import lombok.Getter;
 /**
  * A DDD domain event that indicated the bidding phase has ended.
  */
+
 @Getter
 public class BiddingPhaseEnded {
     private final int trackId;
