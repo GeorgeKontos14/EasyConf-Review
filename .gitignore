@@ -2,7 +2,6 @@
 .gradle
 build/
 gradle-app.setting
-!gradle/wrapper/gradle-wrapper.jar
 **/build/
 .gradletasknamecache
 */bin/*
@@ -26,6 +25,8 @@ gradle-app.setting
 *.tar.gz
 *.rar
 *.db
+
+!gradle/wrapper/gradle-wrapper.jar
 
 ### IntelliJ IDEA ###
 .idea
