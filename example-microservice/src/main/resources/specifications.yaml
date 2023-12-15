@@ -271,7 +271,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
+                type: Paper
                 items:
                   $ref: '#/components/schemas/Paper'
         400:
@@ -409,7 +409,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
+                type: object
                 items:
                   $ref: '#/components/schemas/Reviewer_Preferences'
               example: ["user1":"Can Review", "user2":"Cannot Review", "user3":"Neutral"]
