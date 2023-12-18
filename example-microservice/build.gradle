@@ -155,3 +155,5 @@ pitest {
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
 }
+
+checkstyleMain.source = 'example-microservice/src/main'
