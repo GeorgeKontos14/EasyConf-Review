@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PaperController implements PaperApi {
 
-    private transient UserService userService;
-    private transient PaperService paperService;
+    private UserService userService;
+    private PaperService paperService;
 
 
     PaperController(UserService userService, PaperService paperService) {
@@ -46,11 +46,13 @@ public class PaperController implements PaperApi {
         }
 
         //TODO maybe a try-catch for internal server error when retrieving from db
-        Paper foundPaper = paperService.getPaperWithId(paperId);
+        nl.tudelft.sem.template.example.entities.Paper foundPaper = paperService.getPaperWithId(paperId);
         if (foundPaper == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(List.of(foundPaper), HttpStatus.OK);
+        Paper modelPaper = paperService.turnEntityPaperToModel(foundPaper);
+
+        return new ResponseEntity<>(List.of(modelPaper), HttpStatus.OK);
     }
 }
