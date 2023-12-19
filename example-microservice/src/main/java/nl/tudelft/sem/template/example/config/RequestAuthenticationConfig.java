@@ -32,6 +32,9 @@ public class RequestAuthenticationConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        /*http.authorizeRequests().antMatchers("*").permitAll();
+        http.csrf().disable();
+        http.headers().frameOptions().disable();*/
     }
 
 }
