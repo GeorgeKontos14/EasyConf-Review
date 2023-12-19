@@ -95,7 +95,7 @@ public class ReviewService {
      * @param b the other list.
      * @return true if-f the two lists have some element in common.
      */
-    private boolean intersect(List<Integer> a, List<Integer> b) {
+    public boolean intersect(List<Integer> a, List<Integer> b) {
         for (int i: a)
             if (b.contains(i))
                 return true;
