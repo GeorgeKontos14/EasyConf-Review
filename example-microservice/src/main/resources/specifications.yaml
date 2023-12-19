@@ -6,14 +6,14 @@ info:
 servers:
   - url: 'http://localhost:8084'
 paths:
-  /review/findAllReviewsByUserID:
+  /review/findAllReviewsByUserId:
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
       tags:
         - Review
       parameters:
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user the reviews of whom are returned.
           required: true
@@ -44,13 +44,13 @@ paths:
       tags:
         - Review
       parameters:
-        - name: paperID
+        - name: paperId
           in: query
           description: The ID of the paper the reviews of which are returned
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -118,7 +118,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -147,7 +147,7 @@ paths:
         - Review
       description: Update the confidence score by reviewID
       parameters:
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -183,7 +183,7 @@ paths:
         - Review
       description: Update the overall score by ReviewID
       parameters:
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -219,7 +219,7 @@ paths:
         - Review
       description: post a comment on a review
       parameters:
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -253,13 +253,13 @@ paths:
         - Paper
       description: Given a specific id, return the paper with that id, if any
       parameters:
-        - name: PaperID
+        - name: PaperId
           in: query
           description: The id for which the paper should be reviewed.
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -327,7 +327,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -364,7 +364,7 @@ paths:
           required: true
           schema:
            type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -391,13 +391,13 @@ paths:
         - Paper
       description: Given a paper id, return a list of pairs of reviewer ids and their preference for this specific paper.
       parameters:
-        - name: paperID
+        - name: paperId
           in: query
           description: The ID of the paper we want to see the reviewer preferences for
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -433,7 +433,7 @@ paths:
           required: true
           schema: 
             type: string
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -555,7 +555,7 @@ paths:
             required: true
             schema:
               type: integer
-          - name: userID
+          - name: userId
             in: query
             description: The ID of the user, used for authorization
             required: true
@@ -591,7 +591,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userID
+        - name: userId
           in: query
           description: The ID of the user, used for authorization
           required: true
