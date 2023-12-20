@@ -2,7 +2,9 @@ package nl.tudelft.sem.template.example.config;
 
 import javax.sql.DataSource;
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableJpaRepositories("nl.tudelft.sem.template.example.repositories")
+@EntityScan("nl.tudelft.sem.template.model")
 @PropertySource("classpath:application-dev.properties")
 @EnableTransactionManagement
 public class H2Config {

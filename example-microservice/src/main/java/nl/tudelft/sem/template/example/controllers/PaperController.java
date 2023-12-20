@@ -36,23 +36,27 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
                         @Valid @RequestParam(value = "userId", required = true) Integer userId
     ) {
-        if (userId == null || paperId == null || paperId < 0) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            if (userId == null || paperId == null || paperId < 0) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            boolean isUserValid = userService.validateUser(userId);
+            if (!isUserValid) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            Paper foundPaper = paperService.getPaperWithId(paperId);
+            if (foundPaper == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(List.of(foundPaper), HttpStatus.OK);
+
         }
-
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        //TODO maybe a try-catch for internal server error when retrieving from db
-        nl.tudelft.sem.template.example.entities.Paper foundPaper = paperService.getPaperWithId(paperId);
-        if (foundPaper == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        Paper modelPaper = paperService.turnEntityPaperToModel(foundPaper);
-
-        return new ResponseEntity<>(List.of(modelPaper), HttpStatus.OK);
     }
 }
