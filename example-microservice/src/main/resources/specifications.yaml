@@ -709,21 +709,21 @@ components:
       type: object
       properties:
         id:
-          x-field-extra-annotation: "@lombok.Getter @javax.persistence.Id"
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the paper
           example: 1123
         authors:
-          x-field-extra-annotation: "@lombok.Getter @javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = \"listOfAuthors\")"
+          x-field-extra-annotation: "@javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = \"listOfAuthors\")"
           type: array
           items:
             type: integer
             format: int32
             description: the ids of all the authors of the paper
-            example: 2192
+            example: 2192 
         final_verdict:
-          x-field-extra-annotation: "@lombok.Getter @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
           description: The final verdict on the paper, indicating whether it is accepted or rejected by the committee.
           enum:

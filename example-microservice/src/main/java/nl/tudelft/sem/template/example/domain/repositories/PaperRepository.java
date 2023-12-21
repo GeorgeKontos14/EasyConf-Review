@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.repositories;
+package nl.tudelft.sem.template.example.domain.repositories;
 
 import nl.tudelft.sem.template.model.Paper;
 import org.springframework.data.jpa.repository.JpaRepository;

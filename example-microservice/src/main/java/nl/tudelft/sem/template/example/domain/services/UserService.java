@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.services;
+package nl.tudelft.sem.template.example.domain.services;
 
 import org.springframework.stereotype.Service;
 
