@@ -53,9 +53,7 @@ public class PaperController implements PaperApi {
 
             return new ResponseEntity<>(List.of(foundPaper), HttpStatus.OK);
 
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

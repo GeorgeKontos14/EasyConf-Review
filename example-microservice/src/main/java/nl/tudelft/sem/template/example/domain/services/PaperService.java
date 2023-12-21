@@ -1,8 +1,8 @@
 package nl.tudelft.sem.template.example.domain.services;
 
 import java.util.Optional;
-import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.model.Paper;
 import org.springframework.stereotype.Service;
 
 @Service
