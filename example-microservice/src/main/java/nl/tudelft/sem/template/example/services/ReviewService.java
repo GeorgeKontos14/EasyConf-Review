@@ -5,7 +5,9 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import java.util.*;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
