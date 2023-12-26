@@ -1,6 +1,6 @@
-package nl.tudelft.sem.template.example.services;
+package nl.tudelft.sem.template.example.domain.services;
 
-import nl.tudelft.sem.template.example.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import java.util.*;
@@ -44,7 +44,7 @@ public class ReviewService {
             for (int reviewer: conflicts.keySet()) {
                 if (!intersect(paper.getAuthors(), conflicts.get(reviewer))) {
                     if (preferencesMap.get(Arrays.asList(reviewer, paper.getId())) !=
-                    ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
+                            ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
                         count++;
                         Review review = new Review();
                         review.reviewerId(reviewer);
@@ -108,3 +108,4 @@ public class ReviewService {
     }
 
 }
+
