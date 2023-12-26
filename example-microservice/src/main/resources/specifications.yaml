@@ -1,0 +1,804 @@
+openapi: 3.0.3
+info:
+  title: EasyConf Peer Review
+  description: the OpenAPI specification of the review microservice
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8084'
+paths:
+  /review/findAllReviewsByUserID:
+    get:
+      summary: Find reviews with a specific reviewer ID
+      description: Find the reviews assigned to a given reviewer
+      tags:
+        - Review
+      parameters:
+        - name: userID
+          in: query
+          description: The ID of the user the reviews of whom are returned.
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /review/findAllReviewsByPaperId:
+    get:
+      summary: Find all reviews that belong to a paper
+      description: Given the id of a paper this returns all reviews that have been written for that paper
+      tags:
+        - Review
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper the reviews of which are returned
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /review/findAllPreferencesByUserId:
+    get:
+      summary: Find all preferences that belong to a reviewer
+      description: Given the id of a reviewer, this returns the preference for each paper for that reviewer
+      tags:
+        - Review
+      parameters:
+        - name: reviewerID
+          in: query
+          description: The ID of the reviewer the reviews of whom are returned.
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reviewer_Preferences'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /review/findPaperByReviewId:
+    get:
+      summary: Find the paper for which the review was made
+      tags:
+        - Review
+      description: Given the id of a review, this returns the paper for which the review was made
+      parameters:
+        - name: reviewID
+          in: query
+          description: The ID of the review for which the paper should be returned
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paper'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /review/editConfidenceScore:
+    put:
+      summary: Update confidence score
+      tags:
+        - Review
+      description: Update the confidence score by reviewID
+      parameters:
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: the review to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Review not found
+        500:
+          description: Server error
+
+  /review/editOverallScore:
+    put:
+      summary: Update overall score
+      tags:
+        - Review
+      description: Update the overall score by ReviewID
+      parameters:
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: the review to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        404:
+          description: Review not found
+        500:
+          description: Server error
+
+  /review/postComment:
+    post:
+      summary: Post a comment on a review
+      tags:
+        - Review
+      description: post a comment on a review
+      parameters:
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The comment to post
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+        required: true
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+
+  /paper/getPaperByID:
+    get:
+      summary: Gets a paper with a given ID
+      tags:
+        - Paper
+      description: Given a specific id, return the paper with that id, if any
+      parameters:
+        - name: PaperID
+          in: query
+          description: The id for which the paper should be reviewed.
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Paper'
+        400:
+          description: Invalid Paper ID
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /paper/getAllPapersForID:
+    get:
+      summary: Gets all papers that are to be reviewed by a specific reviewer
+      tags:
+        - Paper
+      description: Get all the papers for which the review is assigned to a reviewer with a given reviewer id
+      parameters:
+        - name: reviewer_id
+          in: query
+          description: the id of the reviewer for which the assigned papers should be returned
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Paper'
+        400:
+          description: Invalid Reviewer ID
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /paper/getPaperReviews:
+    get:
+      summary: Gets the reviews for a paper
+      tags:
+        - Paper
+      description: For a given paper ID, returns the list of 3 reviews associated to that paper
+      parameters:
+        - name: paperId
+          in: query
+          description: the id of the paper
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        400:
+          description: Invalid Paper ID
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+
+  /paper/getPaperComments:
+    get:
+      summary: Get comments for this paper
+      tags:
+        - Paper
+      description: Given the paper ID, return a list of all comments made on this specific paper that are accessible by the given user
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper for which the PC Chair comments are returned
+          required: true
+          schema:
+           type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid Paper ID
+        '500':
+           description: Server Error
+
+  /paper/getPreferencesByPaper:
+    get:
+      summary: Gets a list of user-preference pairs for this paper
+      tags:
+        - Paper
+      description: Given a paper id, return a list of pairs of reviewer ids and their preference for this specific paper.
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper we want to see the reviewer preferences for
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reviewer_Preferences'
+              example: ["user1":"Can Review", "user2":"Cannot Review", "user3":"Neutral"]
+
+  /paper/updatePaperStatus:
+    put:
+      summary: Updates a paper with provided ID with the provided new status
+      tags:
+        - Paper
+      description: Update the 'status' field of the paper with provided id with a new status
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper we want to change the status for
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: The new status of the paper. Can be 'Unresolved', 'Accepted' or 'Rejected'
+          required: true
+          schema: 
+            type: string
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful update
+        '400':
+          description: paperID not found
+        '401':
+          description: status not provided
+        '500':
+          description: Server error
+
+  /paper/postPreferenceScore:
+    post:
+      summary: The reviewers post their preference on a paper
+      tags:
+        - Paper
+      description: The reviewers can post whether they can or cannot review a given paper. They can either express they can review, they cannot review and they are neutral
+      parameters:
+        - name: reviewer_id
+          in: query
+          description: The id of the reviewer
+          required: true
+          schema:
+            type: integer
+        - name: paper_id
+          in: query
+          description: The id of the paper
+          required: true
+          schema:
+            type: integer
+        - name: preference
+          in: query
+          description: The preference score
+          required: true
+          schema:
+            type: string
+            enum:
+              - Can review
+              - Cannot review
+              - Neutral
+      responses:
+        200:
+          description: Successful Response
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
+
+  /analytics/getNumberAccepted:
+    get:
+      summary: "Returns the number of accepted papers"
+      tags:
+        - Analytics
+      description: "Returns how many papers have been accepted by the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
+
+  /analytics/getNumberRejected:
+    get:
+      summary: "Returns the number of rejected papers"
+      tags:
+        - Analytics
+      description: "Returns how many papers have been rejected by the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
+
+  /analytics/getNumberUndecided:
+    get:
+      summary: "Returns the number of undecided papers"
+      tags:
+        - Analytics
+      description: "Returns how many papers have no final verdict upon their acceptance from the conference"
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Statistics not found
+        500:
+          description: server error
+
+  /paper/getTitleAndAbstract:
+    get:
+        summary: "Returns the abstract and the title of a paper"
+        tags:
+          - Paper
+        description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
+        parameters:
+          - name: paperID
+            in: query
+            description: The ID of the paper we want to view the title and abstract
+            required: true
+            schema:
+              type: integer
+          - name: userID
+            in: query
+            description: The ID of the user, used for authorization
+            required: true
+            schema:
+              type: integer
+        responses:
+          200:
+            description: Successful Response
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Paper'
+
+          400:
+            description: invalid input
+          404:
+            description: reviewer/paper not found
+          500:
+            description: server error
+
+  /review/getBiddingDeadline:
+    get:
+      summary: Give the bidding phase deadline
+      tags:
+        - Review
+      description: For a given track, return the deadline for bidding
+      parameters:
+        - name: trackID
+          in: query
+          description: The ID of the track
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+          200:
+            description: Successful Response
+            content:
+              application/json:
+                schema:
+                  type: string
+          400:
+            description: invalid input
+          404:
+            description: reviewer/paper not found
+          500:
+            description: server error
+
+  /review/assignPapers:
+    post:
+      summary: Manually assign papers for review
+      tags:
+        - Review
+      description: Post the review assignments that have been manually made by the chair
+      parameters:
+        - name: trackID
+          in: query
+          description: The id of the track
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          description: The user ID, used for verification
+          schema:
+            type: integer
+        - name: reviews
+          in: query
+          description: The review objects with papers assigned to reviewers
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Review'
+      responses:
+        200:
+          description: Successful Response
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
+
+  /review/startBiddingForTrack:
+    get:
+      summary: Signal that the bidding period should start for a specific track
+      tags:
+        - Review
+      description: For a given track, mark internally that the bidding phase for that track should start
+      parameters:
+        - name: trackID
+          in: query
+          description: The id of the track
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful Response
+        400:
+          description: invalid input
+        500:
+          description: server error
+
+
+
+components:
+  schemas:
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: The unique id of each review
+          example: 143287
+        reviewer_id:
+          type: integer
+          format: int32
+          description: The id of the reviewer that is assigned to the review.
+          example: 213
+        paper_id:
+          type: integer
+          format: int32
+          description: The id of the paper that the review refers to
+          example: 1231
+        confidence_score:
+          type: integer
+          description: The level of expertise of the reviewer on the subject of the document. 1 refers to expert, 2 refers to knowledgeable, 3 refers to basic
+          enum:
+            - 1
+            - 2
+            - 3
+          example: 2
+        overall_score:
+          type: integer
+          description: The score that indicates whether the reviewer accepts or rejects the paper. 2 refers to Strong Accept, 1 refers to Weak Accept, -1 refers to Weak Reject, -2 refers to Strong Reject
+          enum:
+            - -2
+            - -1
+            - 1
+            - 2
+          example: 1
+    Paper:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: The unique id of the paper
+          example: 1123
+        authors:
+          type: array
+          items:
+            type: integer
+            format: int32
+            description: the ids of all the authors of the paper
+            example: 2192
+        final_verdict:
+          type: string
+          description: The final verdict on the paper, indicating whether it is accepted or rejected by the committee.
+          enum:
+            - Accepted
+            - Rejected
+          example: Rejected
+    Reviewer_Preferences:
+      type: object
+      properties:
+        paper_id:
+          type: integer
+          format: int32
+          description: The id of the paper for which a reviewer express their preference
+          example: 12922
+        reviewer_id:
+          type: integer
+          format: int32
+          description: The id of the reviewer that express their preference.
+          example: 510
+        reviewer_preference:
+          type: string
+          description: Indication of whether the reviewer can review the paper in question
+          enum:
+            - Can review
+            - Cannot review
+            - Neutral
+          example: Neutral
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: The unique id of the comment
+          example: 431207
+        author_id:
+          type: integer
+          format: int32
+          description: The id of the user giving a comment
+          example: 345
+        text:
+          type: string
+          description: the contents of the comment
+          example: I agree with the part where you talk about the research method, it is not concise enough yet and should be expanded upon more
+        confidential:
+          type: boolean
+          description: indication of whether the comment is confidential, i.e., whether the authors can view the comment or not
+          example: true
+        paper_id:
+          type: integer
+          format: int32
+          description: the id of the paper that is to be commented
+          example: 875190
+    Pc_chair_review_comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: the unique id of the comment by a PC chair on a given review
+          example: 95
+        review_id:
+          type: integer
+          format: int32
+          description: the id of the review that is to be commented
+          example: 88764
+
+    Oversees:
+      type: object
+      properties:
+        pc_chair_id:
+          type: integer
+          format: int32
+          description: the unique id of the comment by a PC Chair
+          example: 504282
+        paper_id:
+          type: integer
+          format: int32
+          description: the unique id of the paper
+          example: 339438
+
+
