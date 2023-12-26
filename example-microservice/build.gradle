@@ -49,12 +49,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
+	implementation "io.swagger.core.v3:swagger-annotations:2.2.15"
+
+	implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+	implementation group: 'org.openapitools', name: 'jackson-databind-nullable', version: '0.2.6'
 
 	// Local test database (in-memory)
 	implementation 'com.h2database:h2'
+
 	developmentOnly 'org.hibernate:hibernate-entitymanager'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
@@ -75,12 +81,23 @@ openApiGenerate {
 	configOptions.set([
 			dateLibrary: "java15"
 	])
+
+
+
 // Exclude controller generation
 	configOptions = [
 			interfaceOnly: 'true'
 	]
 }
-// compileJava.dependsOn tasks.named("openApiGenerate")
+ compileJava.dependsOn tasks.named("openApiGenerate")
+
+sourceSets {
+	getByName("main") {
+		java {
+			srcDir("$buildDir/generated/src/main/java")
+		}
+	}
+}
 
 test {
 	useJUnitPlatform()
@@ -118,15 +135,49 @@ jacocoTestCoverageVerification() {
 
 checkstyle {
 	toolVersion "8.37"
-	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
-	ignoreFailures = false
-	maxErrors = 0
-	maxWarnings = 0
+	// Link Checkstyle task to customCheckstyle
+	configFile = file("${projectDir}/../config/checkstyle/checkstyle.xml")
+	ignoreFailures = false // Set to true if you want the build to ignore Checkstyle failures
+	showViolations = true // Set to true to display Checkstyle violations in the console
+
+	checkstyleMain {
+		source = project.sourceSets.main.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
+
+	checkstyleTest {
+		source = project.sourceSets.test.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
 }
+
 
 pmd {
 	incrementalAnalysis = true
-	sourceSets = [sourceSets.main]
+	ignoreFailures = true
+	// Exclude specific rules or files/directories
+	pmdMain {
+		source = project.sourceSets.main.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
+
+	pmdTest {
+		source = project.sourceSets.test.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
+
 }
 
 apply plugin: 'info.solidsoft.pitest'

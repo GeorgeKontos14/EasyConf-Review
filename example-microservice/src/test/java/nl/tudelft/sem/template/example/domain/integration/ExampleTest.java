@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.integration;
+package nl.tudelft.sem.template.example.domain.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,9 +37,9 @@ public class ExampleTest {
     private transient AuthManager mockAuthenticationManager;
 
 
-    /*@Test
+    @Test
     public void helloWorld() throws Exception {
-        // Arrange
+        /*// Arrange
         // Notice how some custom parts of authorisation need to be mocked.
         // Otherwise, the integration test would never be able to authorise as the authorisation server is offline.
         when(mockAuthenticationManager.getNetId()).thenReturn("ExampleUser");
@@ -59,5 +59,7 @@ public class ExampleTest {
 
         assertThat(response).isEqualTo("Hello ExampleUser");
 
-    }*/
+         */
+
+    }
 }
