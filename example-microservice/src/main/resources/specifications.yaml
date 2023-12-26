@@ -752,54 +752,66 @@ components:
             - Neutral
           example: Neutral
     Comment:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"comments\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the comment
           example: 431207
         author_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"author_id\")"
           type: integer
           format: int32
           description: The id of the user giving a comment
           example: 345
         text:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"text\")"
           type: string
           description: the contents of the comment
           example: I agree with the part where you talk about the research method, it is not concise enough yet and should be expanded upon more
         confidential:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"confidential\")"
           type: boolean
           description: indication of whether the comment is confidential, i.e., whether the authors can view the comment or not
           example: true
         paper_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"paper_id\")"
           type: integer
           format: int32
           description: the id of the paper that is to be commented
           example: 875190
     Pc_chair_review_comment:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"pc_chair_review_comments\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: the unique id of the comment by a PC chair on a given review
           example: 95
         review_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"review_id\")"
           type: integer
           format: int32
           description: the id of the review that is to be commented
           example: 88764
 
     Oversees:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"oversees\")"
       type: object
       properties:
         pc_chair_id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: the unique id of the comment by a PC Chair
           example: 504282
         paper_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"paper_id\")"
           type: integer
           format: int32
           description: the unique id of the paper
