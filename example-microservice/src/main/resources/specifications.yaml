@@ -705,14 +705,17 @@ components:
             - 2
           example: 1
     Paper:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"papers\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the paper
           example: 1123
         authors:
+          x-field-extra-annotation: "@javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = \"listOfAuthors\")"
           type: array
           items:
             type: integer
@@ -720,6 +723,7 @@ components:
             description: the ids of all the authors of the paper
             example: 2192
         final_verdict:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
           description: The final verdict on the paper, indicating whether it is accepted or rejected by the committee.
           enum:
