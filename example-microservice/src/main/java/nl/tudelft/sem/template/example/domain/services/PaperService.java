@@ -20,9 +20,9 @@ public class PaperService {
      * @param paperId - the id of the paper we want to return
      * @return the found Paper object, or null if there is no object found
      */
-    public Paper getPaperObjectWithId(int paperId) {
+    public Optional<Paper> getPaperObjectWithId(int paperId) {
         Optional<Paper> foundPaper = paperRepository.findById(paperId);
-        return foundPaper.orElse(null);
+        return foundPaper;
     }
 
 }

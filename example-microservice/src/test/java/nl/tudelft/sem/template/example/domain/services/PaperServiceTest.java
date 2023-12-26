@@ -37,14 +37,14 @@ class PaperServiceTest {
     @Test
     void getPaperObjectWithIdExistentTest() {
         Mockito.when(paperRepository.findById(3)).thenReturn(Optional.of(goodPaper));
-        Paper result = paperService.getPaperObjectWithId(3);
-        assertThat(result).isEqualTo(goodPaper);
+        Optional<Paper> result = paperService.getPaperObjectWithId(3);
+        assertThat(result).isEqualTo(Optional.of(goodPaper));
     }
 
     @Test
     void getPaperObjectWithIdNonExistentTest() {
         Mockito.when(paperRepository.findById(5)).thenReturn(Optional.empty());
-        Paper result = paperService.getPaperObjectWithId(5);
-        assertThat(result).isNull();
+        Optional<Paper> result = paperService.getPaperObjectWithId(5);
+        assertThat(result).isEqualTo(Optional.empty());
     }
 }

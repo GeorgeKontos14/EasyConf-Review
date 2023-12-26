@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
+import java.util.Optional;
+
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
@@ -43,7 +45,7 @@ public class PaperControllerTest {
 
     @Test
     void paperGetPaperById_BadRequest_Test() {
-        Mockito.when(paperService.getPaperObjectWithId(any(Integer.class))).thenReturn(goodPaper);
+        Mockito.when(paperService.getPaperObjectWithId(any(Integer.class))).thenReturn(Optional.of(goodPaper));
         Mockito.when(userService.validateUser(any(Integer.class))).thenReturn(true);
 
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(null, 3);
@@ -65,7 +67,7 @@ public class PaperControllerTest {
 
     @Test
     void paperGetPaperById_Unauthorized_Test() {
-        Mockito.when(paperService.getPaperObjectWithId(any(Integer.class))).thenReturn(goodPaper);
+        Mockito.when(paperService.getPaperObjectWithId(any(Integer.class))).thenReturn(Optional.of(goodPaper));
         Mockito.when(userService.validateUser(4)).thenReturn(false);
 
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(5, 4);
@@ -77,7 +79,7 @@ public class PaperControllerTest {
     @Test
     void paperGetPaperById_NotFound_Test() {
         Mockito.when(userService.validateUser(any(Integer.class))).thenReturn(true);
-        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(null);
+        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(Optional.empty());
 
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(3, 8);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -87,7 +89,7 @@ public class PaperControllerTest {
     @Test
     void paperGetPaperById_Ok_Test() {
         Mockito.when(userService.validateUser(any(Integer.class))).thenReturn(true);
-        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(goodPaper);
+        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(Optional.of(goodPaper));
 
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(3, 4);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -99,7 +101,7 @@ public class PaperControllerTest {
     @Test
     void paperGetPaperById_InternalServerError_Test() {
 
-        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(goodPaper);
+        Mockito.when(paperService.getPaperObjectWithId(3)).thenReturn(Optional.of(goodPaper));
         Mockito.when(userService.validateUser(4)).thenThrow(RuntimeException.class);
 
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(3, 4);

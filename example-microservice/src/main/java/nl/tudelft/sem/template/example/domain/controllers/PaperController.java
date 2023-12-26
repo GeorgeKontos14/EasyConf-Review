@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
@@ -36,22 +37,21 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
                         @Valid @RequestParam(value = "userId", required = true) Integer userId
     ) {
+        if (userId == null || paperId == null || paperId < 0 || userId < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         try {
-            if (userId == null || paperId == null || paperId < 0 || userId < 0) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-
             boolean isUserValid = userService.validateUser(userId);
             if (!isUserValid) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
-            Paper foundPaper = paperService.getPaperObjectWithId(paperId);
-            if (foundPaper == null) {
+            Optional<Paper> foundPaper = paperService.getPaperObjectWithId(paperId);
+            if (foundPaper.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
 
-            return new ResponseEntity<>(List.of(foundPaper), HttpStatus.OK);
+            return new ResponseEntity<>(List.of(foundPaper.get()), HttpStatus.OK);
 
         } catch (Exception e) {
             e.printStackTrace();
