@@ -670,9 +670,11 @@ paths:
 components:
   schemas:
     Review:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"reviews\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of each review
@@ -688,6 +690,7 @@ components:
           description: The id of the paper that the review refers to
           example: 1231
         confidence_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The level of expertise of the reviewer on the subject of the document. 1 refers to expert, 2 refers to knowledgeable, 3 refers to basic
           enum:
@@ -696,6 +699,7 @@ components:
             - 3
           example: 2
         overall_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The score that indicates whether the reviewer accepts or rejects the paper. 2 refers to Strong Accept, 1 refers to Weak Accept, -1 refers to Weak Reject, -2 refers to Strong Reject
           enum:

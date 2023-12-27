@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private transient ReviewRepository reviewRepository;
 
     /**
      *  Constructor for the Review Service
