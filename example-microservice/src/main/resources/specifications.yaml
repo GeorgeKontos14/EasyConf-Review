@@ -7,6 +7,7 @@ servers:
   - url: 'http://localhost:8084'
 paths:
   /review/findAllReviewsByUserID:
+
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer

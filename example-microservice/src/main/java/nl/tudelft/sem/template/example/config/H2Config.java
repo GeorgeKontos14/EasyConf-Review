@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableJpaRepositories("nl.tudelft.sem.template.example.domain.repositories")
 @EntityScan("nl.tudelft.sem.template.model")
+
 @PropertySource("classpath:application-dev.properties")
 @EnableTransactionManagement
 public class H2Config {

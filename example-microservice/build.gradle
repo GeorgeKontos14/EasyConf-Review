@@ -89,6 +89,7 @@ openApiGenerate {
 			interfaceOnly: 'true'
 	]
 }
+
 compileJava.dependsOn tasks.named("openApiGenerate")
 
 sourceSets {
