@@ -2,11 +2,13 @@ package nl.tudelft.sem.template.example.domain.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.util.List;
 import java.util.Optional;
 
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
+import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
@@ -15,11 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-
+import org.springframework.web.client.RestTemplate;
 
 
 public class PaperControllerTest {
+
+    private RestTemplate restTemplate;
     private PaperService paperService;
     private UserService userService;
 
@@ -107,5 +110,20 @@ public class PaperControllerTest {
         ResponseEntity<List<Paper>> response = paperController.paperGetPaperByIDGet(3, 4);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).isEqualTo(null);
+    }
+
+    @Test
+    void paperGetTitleAndAbstractGet() {
+        PaperResponse paperResponse = new PaperResponse("hello", List.of(1, 2, 3), 4, "abstr", List.of("key1","key2"), "link1", List.of(1,2,3), "link2");
+        Mockito.when(userService.validateUser(4)).thenReturn(true);
+        Mockito.when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class))).thenReturn(Optional.of(paperResponse));
+
+        ResponseEntity<List<Paper>> response = paperController.paperGetTitleAndAbstractGet(3, 4);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Paper responseObject = new Paper();
+        responseObject.setTitle("hello");
+        responseObject.setAbstract("abstr");
+        assertThat(response.getBody()).isEqualTo(List.of(responseObject));
+
     }
 }

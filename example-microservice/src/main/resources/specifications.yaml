@@ -722,6 +722,14 @@ components:
             format: int32
             description: the ids of all the authors of the paper
             example: 2192
+        title:
+          type: string
+          description: The title of the paper
+          example: Intro to DP;
+        abstract:
+          type: string
+          description: The abstract of the paper
+          example: Small research project into DP
         final_verdict:
           x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
