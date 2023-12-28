@@ -61,9 +61,19 @@ public class PaperController implements PaperApi {
         }
     }
 
+    /**
+     * endpoint for getting title and abstract
+     * @param paperID The ID of the paper we want to view the title and abstract (required)
+     * @param userID The ID of the user, used for authorization (required)
+     * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
+     */
     public ResponseEntity<List<Paper>> paperGetTitleAndAbstractGet(
-            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+                    required = true, in = ParameterIn.QUERY)
+                        @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY)
+                        @Valid @RequestParam(value = "userID", required = true) Integer userID
     ) {
         if (userID == null || paperID == null || paperID < 0 || userID < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
