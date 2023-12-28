@@ -7,7 +7,6 @@ servers:
   - url: 'http://localhost:8084'
 paths:
   /review/findAllReviewsByUserID:
-
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
@@ -364,7 +363,7 @@ paths:
           description: The ID of the paper for which the PC Chair comments are returned
           required: true
           schema:
-           type: integer
+            type: integer
         - name: userID
           in: query
           description: The ID of the user, used for authorization
@@ -383,7 +382,7 @@ paths:
         '400':
           description: Invalid Paper ID
         '500':
-           description: Server Error
+          description: Server Error
 
   /paper/getPreferencesByPaper:
     get:
@@ -432,7 +431,7 @@ paths:
           in: query
           description: The new status of the paper. Can be 'Unresolved', 'Accepted' or 'Rejected'
           required: true
-          schema: 
+          schema:
             type: string
         - name: userID
           in: query
@@ -545,39 +544,39 @@ paths:
 
   /paper/getTitleAndAbstract:
     get:
-        summary: "Returns the abstract and the title of a paper"
-        tags:
-          - Paper
-        description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
-        parameters:
-          - name: paperID
-            in: query
-            description: The ID of the paper we want to view the title and abstract
-            required: true
-            schema:
-              type: integer
-          - name: userID
-            in: query
-            description: The ID of the user, used for authorization
-            required: true
-            schema:
-              type: integer
-        responses:
-          200:
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Paper'
+      summary: "Returns the abstract and the title of a paper"
+      tags:
+        - Paper
+      description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper we want to view the title and abstract
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Paper'
 
-          400:
-            description: invalid input
-          404:
-            description: reviewer/paper not found
-          500:
-            description: server error
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
 
   /review/getBiddingDeadline:
     get:
@@ -599,18 +598,18 @@ paths:
           schema:
             type: integer
       responses:
-          200:
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  type: string
-          400:
-            description: invalid input
-          404:
-            description: reviewer/paper not found
-          500:
-            description: server error
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
 
   /review/assignPapers:
     post:
@@ -671,11 +670,9 @@ paths:
 components:
   schemas:
     Review:
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"reviews\")"
       type: object
       properties:
         id:
-          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of each review
@@ -691,7 +688,6 @@ components:
           description: The id of the paper that the review refers to
           example: 1231
         confidence_score:
-          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The level of expertise of the reviewer on the subject of the document. 1 refers to expert, 2 refers to knowledgeable, 3 refers to basic
           enum:
@@ -700,7 +696,6 @@ components:
             - 3
           example: 2
         overall_score:
-          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The score that indicates whether the reviewer accepts or rejects the paper. 2 refers to Strong Accept, 1 refers to Weak Accept, -1 refers to Weak Reject, -2 refers to Strong Reject
           enum:
@@ -789,33 +784,35 @@ components:
           description: the id of the paper that is to be commented
           example: 875190
     Pc_chair_review_comment:
-        x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"pc_chair_review_comments\")"
-        type: object
-        properties:
-          id:
-            x-field-extra-annotation: "@javax.persistence.Id"
-            type: integer
-            format: int32
-            description: the unique id of the comment by a PC chair on a given review
-            example: 95
-          review_id:
-            x-field-extra-annotation: "@javax.persistence.Column(name=\"review_id\")"
-            type: integer
-            format: int32
-            description: the id of the review that is to be commented
-            example: 88764
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"pc_chair_review_comments\")"
+      type: object
+      properties:
+        id:
+          x-field-extra-annotation: "@javax.persistence.Id"
+          type: integer
+          format: int32
+          description: the unique id of the comment by a PC chair on a given review
+          example: 95
+        review_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"review_id\")"
+          type: integer
+          format: int32
+          description: the id of the review that is to be commented
+          example: 88764
+
     Oversees:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"oversees\")"
       type: object
       properties:
         pc_chair_id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: the unique id of the comment by a PC Chair
           example: 504282
         paper_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"paper_id\")"
           type: integer
           format: int32
           description: the unique id of the paper
           example: 339438
-
-
