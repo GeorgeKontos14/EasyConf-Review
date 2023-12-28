@@ -6,14 +6,15 @@ info:
 servers:
   - url: 'http://localhost:8084'
 paths:
-  /review/findAllReviewsByUserId:
+  /review/findAllReviewsByUserID:
+
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
       tags:
         - Review
       parameters:
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user the reviews of whom are returned.
           required: true
@@ -44,13 +45,13 @@ paths:
       tags:
         - Review
       parameters:
-        - name: paperId
+        - name: paperID
           in: query
           description: The ID of the paper the reviews of which are returned
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -118,7 +119,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -147,7 +148,7 @@ paths:
         - Review
       description: Update the confidence score by reviewID
       parameters:
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -183,7 +184,7 @@ paths:
         - Review
       description: Update the overall score by ReviewID
       parameters:
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -219,7 +220,7 @@ paths:
         - Review
       description: post a comment on a review
       parameters:
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -253,13 +254,13 @@ paths:
         - Paper
       description: Given a specific id, return the paper with that id, if any
       parameters:
-        - name: PaperId
+        - name: PaperID
           in: query
           description: The id for which the paper should be reviewed.
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -271,7 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                type: Paper
+                type: array
                 items:
                   $ref: '#/components/schemas/Paper'
         400:
@@ -327,7 +328,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -364,7 +365,7 @@ paths:
           required: true
           schema:
            type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -391,13 +392,13 @@ paths:
         - Paper
       description: Given a paper id, return a list of pairs of reviewer ids and their preference for this specific paper.
       parameters:
-        - name: paperId
+        - name: paperID
           in: query
           description: The ID of the paper we want to see the reviewer preferences for
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -409,7 +410,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 items:
                   $ref: '#/components/schemas/Reviewer_Preferences'
               example: ["user1":"Can Review", "user2":"Cannot Review", "user3":"Neutral"]
@@ -433,7 +434,7 @@ paths:
           required: true
           schema: 
             type: string
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -555,7 +556,7 @@ paths:
             required: true
             schema:
               type: integer
-          - name: userId
+          - name: userID
             in: query
             description: The ID of the user, used for authorization
             required: true
@@ -591,7 +592,7 @@ paths:
           required: true
           schema:
             type: integer
-        - name: userId
+        - name: userID
           in: query
           description: The ID of the user, used for authorization
           required: true
@@ -670,9 +671,11 @@ paths:
 components:
   schemas:
     Review:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"reviews\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of each review
@@ -688,6 +691,7 @@ components:
           description: The id of the paper that the review refers to
           example: 1231
         confidence_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The level of expertise of the reviewer on the subject of the document. 1 refers to expert, 2 refers to knowledgeable, 3 refers to basic
           enum:
@@ -696,6 +700,7 @@ components:
             - 3
           example: 2
         overall_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The score that indicates whether the reviewer accepts or rejects the paper. 2 refers to Strong Accept, 1 refers to Weak Accept, -1 refers to Weak Reject, -2 refers to Strong Reject
           enum:
@@ -705,14 +710,17 @@ components:
             - 2
           example: 1
     Paper:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"papers\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the paper
           example: 1123
         authors:
+          x-field-extra-annotation: "@javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = \"listOfAuthors\")"
           type: array
           items:
             type: integer
@@ -720,6 +728,7 @@ components:
             description: the ids of all the authors of the paper
             example: 2192
         final_verdict:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
           description: The final verdict on the paper, indicating whether it is accepted or rejected by the committee.
           enum:

@@ -1,13 +1,14 @@
-package nl.tudelft.sem.template.example.controllers;
+package nl.tudelft.sem.template.example.domain.controllers;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
-import nl.tudelft.sem.template.example.services.PaperService;
-import nl.tudelft.sem.template.example.services.UserService;
+import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,23 +37,25 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
                         @Valid @RequestParam(value = "userId", required = true) Integer userId
     ) {
-        if (userId == null || paperId == null || paperId < 0) {
+        if (userId == null || paperId == null || paperId < 0 || userId < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        try {
+            boolean isUserValid = userService.validateUser(userId);
+            if (!isUserValid) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
 
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            Optional<Paper> foundPaper = paperService.getPaperObjectWithId(paperId);
+            if (foundPaper.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(List.of(foundPaper.get()), HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        //TODO maybe a try-catch for internal server error when retrieving from db
-        nl.tudelft.sem.template.example.entities.Paper foundPaper = paperService.getPaperWithId(paperId);
-        if (foundPaper == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        Paper modelPaper = paperService.turnEntityPaperToModel(foundPaper);
-
-        return new ResponseEntity<>(List.of(modelPaper), HttpStatus.OK);
     }
 }

@@ -49,6 +49,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
@@ -88,7 +89,8 @@ openApiGenerate {
 			interfaceOnly: 'true'
 	]
 }
- compileJava.dependsOn tasks.named("openApiGenerate")
+
+compileJava.dependsOn tasks.named("openApiGenerate")
 
 sourceSets {
 	getByName("main") {
@@ -190,3 +192,4 @@ pitest {
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
 }
+
