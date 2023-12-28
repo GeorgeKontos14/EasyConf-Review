@@ -3,6 +3,8 @@ package nl.tudelft.sem.template.example.domain.models;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import nl.tudelft.sem.template.model.Comment;
+import nl.tudelft.sem.template.model.Paper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

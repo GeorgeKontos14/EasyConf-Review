@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.integration;
+package nl.tudelft.sem.template.example.domain.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,25 +39,39 @@ public class ExampleTest {
 
     /*@Test
     public void helloWorld() throws Exception {
-        // Arrange
+        /*
+
+    Arrange
         // Notice how some custom parts of authorisation need to be mocked.
         // Otherwise, the integration test would never be able to authorise as the authorisation server is offline.
-        when(mockAuthenticationManager.getNetId()).thenReturn("ExampleUser");
-        when(mockJwtTokenVerifier.validateToken(anyString())).thenReturn(true);
-        when(mockJwtTokenVerifier.getNetIdFromToken(anyString())).thenReturn("ExampleUser");
+    when(mockAuthenticationManager.getNetId()).
 
-        // Act
-        // Still include Bearer token as AuthFilter itself is not mocked
-        ResultActions result = mockMvc.perform(get("/hello")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer MockedToken"));
+    thenReturn("ExampleUser");
 
-        // Assert
-        result.andExpect(status().isOk());
+    when(mockJwtTokenVerifier.validateToken(anyString())).
 
-        String response = result.andReturn().getResponse().getContentAsString();
+    thenReturn(true);
 
-        assertThat(response).isEqualTo("Hello ExampleUser");
+    when(mockJwtTokenVerifier.getNetIdFromToken(anyString())).
 
-    }*/
+    thenReturn("ExampleUser");
+
+    // Act
+    // Still include Bearer token as AuthFilter itself is not mocked
+    ResultActions result = mockMvc.perform(get("/hello")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer MockedToken"));
+
+    // Assert
+        result.andExpect(
+
+    status().
+
+    isOk());
+
+    String response = result.andReturn().getResponse().getContentAsString();
+
+    assertThat(response).
+
+    isEqualTo("Hello ExampleUser");*/
 }

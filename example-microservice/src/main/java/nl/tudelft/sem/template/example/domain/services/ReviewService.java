@@ -1,6 +1,6 @@
-package nl.tudelft.sem.template.example.services;
+package nl.tudelft.sem.template.example.domain.services;
 
-import nl.tudelft.sem.template.example.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import java.util.*;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private transient ReviewRepository reviewRepository;
 
     /**
      *  Constructor for the Review Service
@@ -44,12 +44,9 @@ public class ReviewService {
             for (int reviewer: conflicts.keySet()) {
                 if (!intersect(paper.getAuthors(), conflicts.get(reviewer))) {
                     if (preferencesMap.get(Arrays.asList(reviewer, paper.getId())) !=
-                    ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
+                            ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
                         count++;
-                        Review review = new Review();
-                        review.reviewerId(reviewer);
-                        review.paperId(paper.getId());
-                        reviews.add(review);
+                        reviews.add(createReview(paper.getId(), reviewer));
                     } else {
                         cannot.add(reviewer);
                     }
@@ -62,26 +59,32 @@ public class ReviewService {
             int i = 0;
             while (count < 3 && i < cannot.size()) {
                 count++;
-                int reviewer = cannot.get(i);
-                Review review = new Review();
-                review.reviewerId(reviewer);
-                review.paperId(paper.getId());
-                reviews.add(review);
+                reviews.add(createReview(paper.getId(), cannot.get(i)));
                 i++;
             }
             i = 0;
             while (count < 3 && i < withConflict.size()) {
                 count++;
-                int reviewer = withConflict.get(i);
-                Review review = new Review();
-                review.reviewerId(reviewer);
-                review.paperId(paper.getId());
-                reviews.add(review);
+                reviews.add(createReview(paper.getId(), withConflict.get(i)));
                 i++;
             }
         }
         return reviews;
     }
+
+    /**
+     * Method that creates a new review.
+     * @param paperId the ID of the paper.
+     * @param reviewerId the ID of the reviewer.
+     * @return the final review object.
+     */
+    private Review createReview(int paperId, int reviewerId) {
+        Review review = new Review();
+        review.reviewerId(reviewerId);
+        review.paperId(paperId);
+        return review;
+    }
+
 
     /**
      * Method that saves reviews to the database.
@@ -108,3 +111,4 @@ public class ReviewService {
     }
 
 }
+

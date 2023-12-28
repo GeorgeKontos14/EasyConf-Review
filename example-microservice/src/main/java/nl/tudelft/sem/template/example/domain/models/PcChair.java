@@ -8,6 +8,9 @@ import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.tudelft.sem.template.model.Comment;
+import nl.tudelft.sem.template.model.Paper;
+
 @Getter
 @Entity
 public class PcChair {

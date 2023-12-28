@@ -1,10 +1,10 @@
-package nl.tudelft.sem.template.example.controllers;
+package nl.tudelft.sem.template.example.domain.controllers;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import nl.tudelft.sem.template.api.ReviewApi;
-import nl.tudelft.sem.template.example.services.ReviewService;
-import nl.tudelft.sem.template.example.services.UserService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
+import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

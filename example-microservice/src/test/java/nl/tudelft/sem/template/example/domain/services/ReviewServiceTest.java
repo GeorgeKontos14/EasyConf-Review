@@ -1,8 +1,8 @@
-package nl.tudelft.sem.template.example.services;
+package nl.tudelft.sem.template.example.domain.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import nl.tudelft.sem.template.example.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;

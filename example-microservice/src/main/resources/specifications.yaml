@@ -7,6 +7,7 @@ servers:
   - url: 'http://localhost:8084'
 paths:
   /review/findAllReviewsByUserID:
+
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
@@ -271,7 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                type: Paper
+                type: array
                 items:
                   $ref: '#/components/schemas/Paper'
         400:
@@ -409,7 +410,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 items:
                   $ref: '#/components/schemas/Reviewer_Preferences'
               example: ["user1":"Can Review", "user2":"Cannot Review", "user3":"Neutral"]
@@ -670,9 +671,11 @@ paths:
 components:
   schemas:
     Review:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"reviews\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of each review
@@ -688,6 +691,7 @@ components:
           description: The id of the paper that the review refers to
           example: 1231
         confidence_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The level of expertise of the reviewer on the subject of the document. 1 refers to expert, 2 refers to knowledgeable, 3 refers to basic
           enum:
@@ -696,6 +700,7 @@ components:
             - 3
           example: 2
         overall_score:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: integer
           description: The score that indicates whether the reviewer accepts or rejects the paper. 2 refers to Strong Accept, 1 refers to Weak Accept, -1 refers to Weak Reject, -2 refers to Strong Reject
           enum:
@@ -705,14 +710,17 @@ components:
             - 2
           example: 1
     Paper:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"papers\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the paper
           example: 1123
         authors:
+          x-field-extra-annotation: "@javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = \"listOfAuthors\")"
           type: array
           items:
             type: integer
@@ -720,6 +728,7 @@ components:
             description: the ids of all the authors of the paper
             example: 2192
         final_verdict:
+          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
           description: The final verdict on the paper, indicating whether it is accepted or rejected by the committee.
           enum:
@@ -748,45 +757,53 @@ components:
             - Neutral
           example: Neutral
     Comment:
+      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"comments\")"
       type: object
       properties:
         id:
+          x-field-extra-annotation: "@javax.persistence.Id"
           type: integer
           format: int32
           description: The unique id of the comment
           example: 431207
         author_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"author_id\")"
           type: integer
           format: int32
           description: The id of the user giving a comment
           example: 345
         text:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"text\")"
           type: string
           description: the contents of the comment
           example: I agree with the part where you talk about the research method, it is not concise enough yet and should be expanded upon more
         confidential:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"confidential\")"
           type: boolean
           description: indication of whether the comment is confidential, i.e., whether the authors can view the comment or not
           example: true
         paper_id:
+          x-field-extra-annotation: "@javax.persistence.Column(name=\"paper_id\")"
           type: integer
           format: int32
           description: the id of the paper that is to be commented
           example: 875190
     Pc_chair_review_comment:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: the unique id of the comment by a PC chair on a given review
-          example: 95
-        review_id:
-          type: integer
-          format: int32
-          description: the id of the review that is to be commented
-          example: 88764
-
+        x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"pc_chair_review_comments\")"
+        type: object
+        properties:
+          id:
+            x-field-extra-annotation: "@javax.persistence.Id"
+            type: integer
+            format: int32
+            description: the unique id of the comment by a PC chair on a given review
+            example: 95
+          review_id:
+            x-field-extra-annotation: "@javax.persistence.Column(name=\"review_id\")"
+            type: integer
+            format: int32
+            description: the id of the review that is to be commented
+            example: 88764
     Oversees:
       type: object
       properties:
