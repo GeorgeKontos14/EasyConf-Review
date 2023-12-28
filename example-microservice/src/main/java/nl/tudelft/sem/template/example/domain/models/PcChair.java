@@ -14,6 +14,11 @@ public class PcChair {
     private Integer id;
 
     @ElementCollection
+    @CollectionTable(name = "listOfTracks")
+    @Valid
+    private List<Integer> tracks;
+
+    @ElementCollection
     @CollectionTable(name = "listOfPapers")
     @Valid
     private List<Integer> papers;
@@ -23,17 +28,26 @@ public class PcChair {
     @Valid
     private List<Integer> comments;
 
-    public PcChair(List<Integer> papers, List<Integer> comments) {
+    public PcChair() {
+        this.papers = new ArrayList<>();
+        this.comments = new ArrayList<>();
+    }
+
+
+    public PcChair(List<Integer> tracks, List<Integer> papers, List<Integer> comments) {
+        this.tracks = tracks;
         this.papers = papers;
         this.comments = comments;
     }
 
-    public PcChair(List<Integer> papers) {
+    public PcChair(List<Integer> tracks, List<Integer> papers) {
+        this.tracks = tracks;
         this.papers = papers;
         this.comments = new ArrayList<>();
     }
 
-    public PcChair() {
+    public PcChair(List<Integer> tracks) {
+        this.tracks = tracks;
         this.papers = new ArrayList<>();
         this.comments = new ArrayList<>();
     }
@@ -64,4 +78,14 @@ public class PcChair {
     public void addPaper(Integer paperID) {
         papers.add(paperID);
     }
+
+    /**
+     * Method that checks if the PC Chair has access to a specific track.
+     * @param trackID the track in question.
+     * @return true if-f the track is one of the tracks the chair is responsible for.
+     */
+    public boolean hasAccess(int trackID) {
+        return this.tracks.contains(trackID);
+    }
+
 }
