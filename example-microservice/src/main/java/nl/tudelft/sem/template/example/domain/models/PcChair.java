@@ -2,16 +2,10 @@ package nl.tudelft.sem.template.example.domain.models;
 
 import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-
-import nl.tudelft.sem.template.model.Comment;
-import nl.tudelft.sem.template.model.Paper;
 
 @Getter
 @Entity
@@ -19,11 +13,13 @@ public class PcChair {
     @Id
     private Integer id;
 
-    @javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = "listOfPapers")
+    @ElementCollection
+    @CollectionTable(name = "listOfPapers")
     @Valid
     private List<Integer> papers;
 
-    @javax.persistence.ElementCollection @javax.persistence.CollectionTable(name = "listOfComments")
+    @ElementCollection
+    @CollectionTable(name = "listOfComments")
     @Valid
     private List<Integer> comments;
 
