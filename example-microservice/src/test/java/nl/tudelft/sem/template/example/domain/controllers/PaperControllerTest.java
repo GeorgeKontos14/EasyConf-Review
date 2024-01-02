@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
