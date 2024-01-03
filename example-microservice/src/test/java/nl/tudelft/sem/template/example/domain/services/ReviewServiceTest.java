@@ -2,6 +2,8 @@ package nl.tudelft.sem.template.example.domain.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -15,6 +17,7 @@ import java.util.*;
 public class ReviewServiceTest {
     private ReviewService sut;
     private ReviewRepository repo;
+    private PcChairRepository pcChairRepository;
     private List<Paper> papers;
     private List<ReviewerPreferences> prefs;
     private Map<Integer, List<Integer>> conflicts;
@@ -25,7 +28,8 @@ public class ReviewServiceTest {
     @BeforeEach
     public void setup() {
         repo = Mockito.mock(ReviewRepository.class);
-        sut = new ReviewService(repo);
+        pcChairRepository = Mockito.mock(PcChairRepository.class);
+        sut = new ReviewService(repo, pcChairRepository);
         Paper p1 = new Paper();
         p1.setId(1);
         p1.setAuthors(Arrays.asList(1,2,3,4));
@@ -188,5 +192,19 @@ public class ReviewServiceTest {
         List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
         assertThat(assignments.size()).isEqualTo(15);
         sut.saveReviews(assignments);
+    }
+
+    /**
+     * Test for the verifyPcChair method.
+     */
+    @Test
+    public void verifyPcChairTest() {
+        PcChair chair = new PcChair(Arrays.asList(1,2,3));
+        chair.setId(1);
+        Mockito.when(pcChairRepository.findById(1)).thenReturn(Optional.of(chair));
+        Mockito.when(pcChairRepository.findById(2)).thenReturn(Optional.empty());
+        assertThat(sut.verifyPcChair(1, 1)).isTrue();
+        assertThat(sut.verifyPcChair(1, 4)).isFalse();
+        assertThat(sut.verifyPcChair(2, 3)).isFalse();
     }
 }
