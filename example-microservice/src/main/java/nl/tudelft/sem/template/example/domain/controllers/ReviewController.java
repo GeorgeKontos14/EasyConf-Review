@@ -33,7 +33,7 @@ public class ReviewController implements ReviewApi {
             @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY) @Valid @RequestParam(value = "userId", required = false) Integer userId,
             @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers", in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews", required = false) List<@Valid Review> reviews
     ) {
-        if (userId == null || trackID == null || reviews.isEmpty())
+        if (nullCheck(userId, trackID, reviews))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         boolean isUserValid = userService.validateUser(userId);
         if(!isUserValid)
@@ -61,14 +61,26 @@ public class ReviewController implements ReviewApi {
             @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY) @Valid @RequestParam(value = "trackID", required = false) Integer trackID,
             @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY) @Valid @RequestParam(value = "userId", required = false) Integer userId,
             @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers", in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews", required = false) List<@Valid Review> reviews) {
-        if (userId == null || trackID == null || reviews.isEmpty())
+        if (nullCheck(userId, trackID, reviews))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        // TODO: Check if userID has access to changing the reviews
         boolean isUserValid = userService.validateUser(userId);
         if(!isUserValid)
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        if (!reviewService.verifyPcChair(userId, trackID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         reviewService.saveReviews(reviews);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    /**
+     * Null check for the start of each method
+     * @param userId the user ID
+     * @param trackID the track ID
+     * @param reviews the reviews in question
+     * @return true if-f nothing is null/empty
+     */
+    private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
+        return userId == null || trackID == null || reviews.isEmpty();
     }
 
 }

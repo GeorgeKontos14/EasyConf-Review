@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -10,14 +12,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewService {
 
-    private transient ReviewRepository reviewRepository;
+    private transient final ReviewRepository reviewRepository;
+    private transient final PcChairRepository pcChairRepository;
 
     /**
      *  Constructor for the Review Service
      * @param reviewRepository the repositories where reviews are meant to be stored.
+     * @param pcChairRepository the repository containing pcChairs
      */
-    public ReviewService(ReviewRepository reviewRepository) {
+    public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository) {
         this.reviewRepository = reviewRepository;
+        this.pcChairRepository = pcChairRepository;
     }
 
     /**
@@ -109,6 +114,19 @@ public class ReviewService {
                 return true;
         return false;
     }
+
+    /**
+     * Method that retrieves a pc chair from the repository and
+     * checks whether they have access to a given track.
+     * @param userID the ID of the user(PC Chair)
+     * @param trackID the ID of the track
+     * @return true if-f the user is responsible for the track in question.
+     */
+    public boolean verifyPcChair(int userID, int trackID) {
+        Optional<PcChair> chair = pcChairRepository.findById(userID);
+        return chair.map(pcChair -> pcChair.hasAccess(trackID)).orElse(false);
+    }
+
 
 }
 

@@ -7,7 +7,6 @@ servers:
   - url: 'http://localhost:8084'
 paths:
   /review/findAllReviewsByUserID:
-
     get:
       summary: Find reviews with a specific reviewer ID
       description: Find the reviews assigned to a given reviewer
@@ -383,7 +382,7 @@ paths:
         '400':
           description: Invalid Paper ID
         '500':
-           description: Server Error
+          description: Server Error
 
   /paper/getPreferencesByPaper:
     get:
@@ -432,7 +431,7 @@ paths:
           in: query
           description: The new status of the paper. Can be 'Unresolved', 'Accepted' or 'Rejected'
           required: true
-          schema: 
+          schema:
             type: string
         - name: userID
           in: query
@@ -545,39 +544,39 @@ paths:
 
   /paper/getTitleAndAbstract:
     get:
-        summary: "Returns the abstract and the title of a paper"
-        tags:
-          - Paper
-        description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
-        parameters:
-          - name: paperID
-            in: query
-            description: The ID of the paper we want to view the title and abstract
-            required: true
-            schema:
-              type: integer
-          - name: userID
-            in: query
-            description: The ID of the user, used for authorization
-            required: true
-            schema:
-              type: integer
-        responses:
-          200:
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Paper'
+      summary: "Returns the abstract and the title of a paper"
+      tags:
+        - Paper
+      description: "For a given paper ID, returns the title and abstract, as part of the bidding phase"
+      parameters:
+        - name: paperID
+          in: query
+          description: The ID of the paper we want to view the title and abstract
+          required: true
+          schema:
+            type: integer
+        - name: userID
+          in: query
+          description: The ID of the user, used for authorization
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Paper'
 
-          400:
-            description: invalid input
-          404:
-            description: reviewer/paper not found
-          500:
-            description: server error
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
 
   /review/getBiddingDeadline:
     get:
@@ -599,18 +598,18 @@ paths:
           schema:
             type: integer
       responses:
-          200:
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  type: string
-          400:
-            description: invalid input
-          404:
-            description: reviewer/paper not found
-          500:
-            description: server error
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: invalid input
+        404:
+          description: reviewer/paper not found
+        500:
+          description: server error
 
   /review/assignPapers:
     post:
@@ -665,6 +664,7 @@ paths:
           description: invalid input
         500:
           description: server error
+
 
 
 components:
