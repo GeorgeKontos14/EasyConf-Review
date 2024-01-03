@@ -363,7 +363,7 @@ paths:
           description: The ID of the paper for which the PC Chair comments are returned
           required: true
           schema:
-            type: integer
+           type: integer
         - name: userID
           in: query
           description: The ID of the user, used for authorization
