@@ -116,6 +116,15 @@ public class ReviewService {
     }
 
     /**
+     * Method that retrieves all reviews assigned to a specific reviewer
+     * @param reviewerId the ID of the reviewer
+     * @return the List of reviews assigned to the reviewer in question
+     */
+    public List<Review> reviewsByReviewer(int reviewerId) {
+        return reviewRepository.findReviewByReviewerId(reviewerId);
+    }
+
+    /**
      * Method that retrieves a pc chair from the repository and
      * checks whether they have access to a given track.
      * @param userID the ID of the user(PC Chair)

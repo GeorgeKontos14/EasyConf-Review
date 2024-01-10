@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -72,6 +73,19 @@ public class ReviewController implements ReviewApi {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
+    @Override
+    public ResponseEntity<List<Review>> reviewFindAllReviewsByUserIDGet(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user the reviews of whom are returned.", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<Review> reviews = reviewService.reviewsByReviewer(userID);
+        return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
+    }
+
     /**
      * Null check for the start of each method
      * @param userId the user ID
@@ -82,5 +96,6 @@ public class ReviewController implements ReviewApi {
     private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
         return userId == null || trackID == null || reviews.isEmpty();
     }
+
 
 }
