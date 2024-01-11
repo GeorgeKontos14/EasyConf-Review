@@ -1,6 +1,8 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -9,6 +11,7 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,5 +144,36 @@ public class ReviewControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(reviews);
     }
+
+    @Test
+    void reviewEditConfidenceScorePut() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+        Mockito.when(reviewService.existsReview(2)).thenReturn(true);
+        Review review = buildReview(2,3,4);
+        review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_1);
+        Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4,review);
+        assertThat(receivedReview.getBody()).isEqualTo(review);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void reviewEditConfidenceScore() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+        Mockito.when(reviewService.existsReview(2)).thenReturn(false);
+        Review review = buildReview(2,3,4);
+        review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_2);
+        Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4,review);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void reviewEditConfidenceScoreBadReq()
+    {
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4, null);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
 
 }
