@@ -168,6 +168,12 @@ public class ReviewControllerTest {
         assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    void reviewEditConfidenceScoreBadReq()
+    {
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4, null);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 
 
 }
