@@ -16,26 +16,12 @@ public class TrackPhaseTest {
         sut = new TrackPhase();
         assertThat(sut.getPapers().isEmpty()).isTrue();
         assertThat(sut.getPhase()).isEqualTo(TrackPhase.PhaseEnum.BIDDING);
-        sut = new TrackPhase(Arrays.asList(1,2,3));
-        assertThat(sut.getPapers()).isEqualTo(Arrays.asList(1,2,3));
+        sut = new TrackPhase(Arrays.asList(1, 2, 3));
+        assertThat(sut.getPapers()).isEqualTo(Arrays.asList(1, 2, 3));
         assertThat(sut.getPhase()).isEqualTo(TrackPhase.PhaseEnum.BIDDING);
-        sut = new TrackPhase(Arrays.asList(1,2), TrackPhase.PhaseEnum.FINAL);
-        assertThat(sut.getPapers()).isEqualTo(Arrays.asList(1,2));
+        sut = new TrackPhase(Arrays.asList(1, 2), TrackPhase.PhaseEnum.FINAL);
+        assertThat(sut.getPapers()).isEqualTo(Arrays.asList(1, 2));
         assertThat(sut.getPhase()).isEqualTo(TrackPhase.PhaseEnum.FINAL);
-    }
-
-    /**
-     * Test the class' setters.
-     */
-    @Test
-    public void settersTest() {
-        sut = new TrackPhase();
-        sut.setId(1);
-        sut.setPhase(TrackPhase.PhaseEnum.ASSIGNMENT);
-        sut.setPapers(Arrays.asList(1,3));
-        assertThat(sut.getId()).isEqualTo(1);
-        assertThat(sut.getPhase()).isEqualTo(TrackPhase.PhaseEnum.ASSIGNMENT);
-        assertThat(sut.getPapers()).isEqualTo(Arrays.asList(1,3));
     }
 
     /**

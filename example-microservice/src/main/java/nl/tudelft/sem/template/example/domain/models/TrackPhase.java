@@ -4,6 +4,7 @@ package nl.tudelft.sem.template.example.domain.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Entity
 public class TrackPhase {
     @Id
@@ -69,18 +71,6 @@ public class TrackPhase {
 
     public TrackPhase(List<Integer> papers, PhaseEnum phase) {
         this.papers = papers;
-        this.phase = phase;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setPapers(List<Integer> papers) {
-        this.papers = papers;
-    }
-
-    public void setPhase(PhaseEnum phase) {
         this.phase = phase;
     }
 
