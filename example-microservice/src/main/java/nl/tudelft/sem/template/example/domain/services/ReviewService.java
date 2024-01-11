@@ -125,6 +125,15 @@ public class ReviewService {
     }
 
     /**
+     * Method that retrieves all reviews for a specific paper.
+     * @param paperId the ID of the paper
+     * @return the list of reviews for the paper in question.
+     */
+    public List<Review> reviewsByPaper(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
+    }
+
+    /**
      * Method that retrieves a pc chair from the repository and
      * checks whether they have access to a given track.
      * @param userID the ID of the user(PC Chair)
