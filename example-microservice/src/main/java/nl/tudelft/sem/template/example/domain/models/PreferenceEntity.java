@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Setter
 @Getter
@@ -16,8 +13,9 @@ public class PreferenceEntity {
     @Id
     private Integer id;
 
+    @Column
     private Integer reviewerId;
-
+    @Column
     private Integer paperId;
 
     @Enumerated(EnumType.STRING)
