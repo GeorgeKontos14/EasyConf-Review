@@ -1,19 +1,28 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
+import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 
 @RestController
@@ -21,11 +30,12 @@ public class PaperController implements PaperApi {
 
     private UserService userService;
     private PaperService paperService;
+    private ReviewerPreferencesService reviewerPreferencesService;
 
-
-    PaperController(UserService userService, PaperService paperService) {
+    PaperController(UserService userService, PaperService paperService, ReviewerPreferencesService reviewerPreferencesService) {
         this.userService = userService;
         this.paperService = paperService;
+        this.reviewerPreferencesService = reviewerPreferencesService;
     }
 
     @Override
@@ -57,5 +67,95 @@ public class PaperController implements PaperApi {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * GET /paper/getPaperComments : Get comments for this paper
+     * Given the paper ID, return a list of all comments made on this specific paper that are accessible by the given user
+     *
+     * @param paperID The ID of the paper for which the PC Chair comments are returned (required)
+     * @param userID  The ID of the user, used for authorization (required)
+     * @return Successful response (status code 200)
+     * or Invalid Paper ID (status code 400)
+     * or Server Error (status code 500)
+     */
+    @Override
+    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "userID", required = true) Integer userID
+    ) {
+        if (userID == null || paperID == null || paperID < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (!userService.validateUser(userID)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<Comment> comments = paperService.paperGetPaperCommentsGet(paperID);
+        if (comments.isEmpty())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+
+    /**
+     * endpoint for getting title and abstract
+     * @param paperID The ID of the paper we want to view the title and abstract (required)
+     * @param userID The ID of the user, used for authorization (required)
+     * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
+     */
+    @Override
+    public ResponseEntity<String> paperGetTitleAndAbstractGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+                    required = true, in = ParameterIn.QUERY)
+                        @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY)
+                        @Valid @RequestParam(value = "userID", required = true) Integer userID
+    ) {
+        if (userID == null || paperID == null || paperID < 0 || userID < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        try {
+            boolean isUserValid = userService.validateUser(userID);
+            if (!isUserValid) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+
+            Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperID, new RestTemplate());
+            if (foundPaper.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("title", foundPaper.get().getTitle());
+            responseMap.put("abstract", foundPaper.get().getAbstract());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String response = objectMapper.writeValueAsString(responseMap);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+    }
+
+    @Override
+    public ResponseEntity<List<ReviewerPreferences>> paperGetPreferencesByPaperGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to see the reviewer preferences for", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForPaper(paperID);
+        return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
     }
 }
