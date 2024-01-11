@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import nl.tudelft.sem.template.api.ReviewApi;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
+import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +24,13 @@ public class ReviewController implements ReviewApi {
 
     private final UserService userService;
     private final ReviewService reviewService;
-
+    private final ReviewerPreferencesService reviewerPreferencesService;
     private final PaperService paperService;
 
-    public ReviewController(UserService userService, ReviewService reviewService, PaperService paperService) {
+    public ReviewController(UserService userService, ReviewService reviewService, ReviewerPreferencesService reviewerPreferencesService, PaperService paperService) {
         this.userService = userService;
         this.reviewService = reviewService;
+        this.reviewerPreferencesService = reviewerPreferencesService;
         this.paperService = paperService;
     }
 
@@ -136,7 +139,7 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<Review> reviewEditConfidenceScorePut(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID,
             @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
     ) {
         if(userID == null || review == null)
@@ -148,6 +151,19 @@ public class ReviewController implements ReviewApi {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         Review updatedReview = reviewService.saveAndReturnReview(review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<ReviewerPreferences>> reviewFindAllPreferencesByUserIdGet(
+            @NotNull @Parameter(name = "reviewerID", description = "The ID of the reviewer the reviews of whom are returned.", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewerID") Integer reviewerID
+    ) {
+        if(reviewerID == null || reviewerID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(reviewerID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForReviewer(reviewerID);
+        return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
     }
 
 }

@@ -6,12 +6,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
+import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class ReviewControllerTest {
     private UserService userService;
     private ReviewService reviewService;
     private PaperService paperService;
+    private ReviewerPreferencesService reviewerPreferencesService;
     private ReviewController sut;
 
     /**
@@ -42,6 +44,22 @@ public class ReviewControllerTest {
     }
 
     /**
+     * Constructor method for reviewer Preferences.
+     * @param reviewerId the id of the reviewer.
+     * @param paperId the id of the paper.
+     * @param preferenceEnum the preference.
+     * @return the reviewer preferences object.
+     */
+    private ReviewerPreferences buildReviewPreferences(
+            int reviewerId, int paperId, ReviewerPreferences.ReviewerPreferenceEnum preferenceEnum) {
+        ReviewerPreferences pref = new ReviewerPreferences();
+        pref.setReviewerId(reviewerId);
+        pref.setPaperId(paperId);
+        pref.setReviewerPreference(preferenceEnum);
+        return pref;
+    }
+
+    /**
      * Setup for the tests.
      */
     @BeforeEach
@@ -49,7 +67,8 @@ public class ReviewControllerTest {
         userService = Mockito.mock(UserService.class);
         reviewService = Mockito.mock(ReviewService.class);
         paperService = Mockito.mock(PaperService.class);
-        sut = new ReviewController(userService, reviewService, paperService);
+        reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
+        sut = new ReviewController(userService, reviewService, reviewerPreferencesService, paperService);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
     }
@@ -175,5 +194,33 @@ public class ReviewControllerTest {
         assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    public void findAllPreferencesByUserIdBadRequest() {
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllPreferencesByUserIdGet(-3);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 
+    @Test
+    public void findAllPreferencesByUserIdUnauthorizedTest() {
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void findAllPreferencesByUserIdOkTest() {
+        ReviewerPreferences pref1 = buildReviewPreferences(1,2,
+                ReviewerPreferences.ReviewerPreferenceEnum.CAN_REVIEW);
+        ReviewerPreferences pref2 = buildReviewPreferences(2,4,
+                ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW);
+        Mockito.when(reviewerPreferencesService.getPreferencesForReviewer(1))
+                .thenReturn(Arrays.asList(pref1, pref2));
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
+    }
 }
