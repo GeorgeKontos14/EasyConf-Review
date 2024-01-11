@@ -169,7 +169,10 @@ public class PaperControllerTest {
 
     @Test
     void getPaperCommentTest() {
-    
+        Paper p = new Paper();
+        p.id(1);
+        Mockito.when(paperService.getPaperObjectWithId(1)).thenReturn(Optional.of(p));
+        paperController.paperGetPaperByIDGet(1, 1);
     }
 
     public void getPreferencesByPaperBadRequestTest() {
@@ -209,4 +212,6 @@ public class PaperControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
     }
+
+
 }
