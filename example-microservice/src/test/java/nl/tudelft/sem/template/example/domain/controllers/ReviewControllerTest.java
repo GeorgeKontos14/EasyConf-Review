@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
@@ -273,6 +274,23 @@ public class ReviewControllerTest {
     {
         ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4, null);
         assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void postReviewInvalidTest() {
+        ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(sut.reviewPostCommentPost(null, new Comment())).isEqualTo(response);
+        assertThat(sut.reviewPostCommentPost(1, null)).isEqualTo(response);
+
+        assertThat(sut.reviewPostCommentPost(-1, new Comment()))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void postReviewTest() {
+        Comment c = new Comment();
+        Mockito.when(reviewService.reviewPostCommentPost(c)).thenReturn(c);
+        assertThat(sut.reviewPostCommentPost(1, c)).isEqualTo(new ResponseEntity<Comment>(c, HttpStatus.OK));
     }
 
 

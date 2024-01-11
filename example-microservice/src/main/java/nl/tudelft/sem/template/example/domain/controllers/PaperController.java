@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.api.PaperApi;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,21 @@ public class PaperController implements PaperApi {
     }
 
     /**
+     * GET /paper/getPaperComments : Get comments for this paper
+     * Given the paper ID, return a list of all comments made on this specific paper that are accessible by the given user
+     *
+     * @param paperID The ID of the paper for which the PC Chair comments are returned (required)
+     * @param userID  The ID of the user, used for authorization (required)
+     * @return Successful response (status code 200)
+     * or Invalid Paper ID (status code 400)
+     * or Server Error (status code 500)
+     */
+    @Override
+    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(Integer paperID, Integer userID) {
+        return PaperApi.super.paperGetPaperCommentsGet(paperID, userID);
+    }
+
+    /**
      * endpoint for getting title and abstract
      * @param paperID The ID of the paper we want to view the title and abstract (required)
      * @param userID The ID of the user, used for authorization (required)
@@ -106,5 +122,7 @@ public class PaperController implements PaperApi {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+
     }
 }

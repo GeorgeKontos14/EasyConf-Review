@@ -6,6 +6,7 @@ import nl.tudelft.sem.template.api.ReviewApi;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.HttpStatus;
@@ -156,5 +157,30 @@ public class ReviewController implements ReviewApi {
             @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
     ) {
         return reviewEditConfidenceScorePut(userID, review);
+    }
+
+    /**
+     * POST /review/postComment : Post a comment on a review
+     * post a comment on a review
+     *
+     * @param userID  The ID of the user, used for authorization (required)
+     * @param comment The comment to post (required)
+     * @return Successful operation (status code 200)
+     * or Bad request (status code 400)
+     * or Unauthorized (status code 401)
+     * or Server error (status code 500)
+     */
+    @Override
+    public ResponseEntity<Comment> reviewPostCommentPost(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true) Integer userID,
+            @Parameter(name = "Comment", description = "the comment to post", required = true) @RequestBody
+            Comment comment) {
+        if(userID == null || comment == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Comment c = reviewService.reviewPostCommentPost(comment);
+        return new ResponseEntity<>(c, HttpStatus.OK);
     }
 }
