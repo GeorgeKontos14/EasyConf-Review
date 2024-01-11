@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import java.util.List;
 import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
+import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;

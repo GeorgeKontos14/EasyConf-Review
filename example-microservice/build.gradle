@@ -89,7 +89,8 @@ openApiGenerate {
 			interfaceOnly: 'true'
 	]
 }
- compileJava.dependsOn tasks.named("openApiGenerate")
+
+compileJava.dependsOn tasks.named("openApiGenerate")
 
 sourceSets {
 	getByName("main") {
@@ -191,3 +192,4 @@ pitest {
 	outputFormats = ['XML', 'HTML']
 	timestampedReports = false
 }
+
