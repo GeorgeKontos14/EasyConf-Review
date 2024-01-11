@@ -8,12 +8,10 @@ import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -81,6 +79,22 @@ public class ReviewController implements ReviewApi {
      */
     private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
         return userId == null || trackID == null || reviews.isEmpty();
+    }
+
+    @Override
+    public ResponseEntity<Review> reviewEditConfidenceScorePut(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID,
+            @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
+    ) {
+        if(userID == null || review == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        if(!reviewService.existsReview(review.getId()))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Review updatedReview = reviewService.saveAndReturnReview(review);
+        return new ResponseEntity<>(updatedReview, HttpStatus.OK);
     }
 
 }

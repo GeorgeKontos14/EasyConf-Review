@@ -128,5 +128,12 @@ public class ReviewService {
     }
 
 
+    public boolean existsReview(int reviewId) {
+        return reviewRepository.existsById(reviewId);
+    }
+
+    public Review saveAndReturnReview(Review review) {
+        return reviewRepository.save(review);
+    }
 }
 
