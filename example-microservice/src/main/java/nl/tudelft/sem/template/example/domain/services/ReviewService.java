@@ -136,6 +136,15 @@ public class ReviewService {
         return chair.map(pcChair -> pcChair.hasAccess(trackID)).orElse(false);
     }
 
+    /**
+     * Method that retrieves a review with a given ID, if one exists.
+     * @param reviewId the ID in question.
+     * @return an optional object, containing the review if one exists; empty otherwise.
+     */
+    public Optional<Review> findReviewObjectWithId(int reviewId) {
+        return reviewRepository.findById(reviewId);
+    }
+
 
 }
 
