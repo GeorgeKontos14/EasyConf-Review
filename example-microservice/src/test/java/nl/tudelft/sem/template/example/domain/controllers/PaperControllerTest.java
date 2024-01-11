@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
@@ -124,6 +123,14 @@ public class PaperControllerTest {
         String responseObject = "{\"abstract\":\"abstr\",\"title\":\"hello\"}";
 
         assertThat(response.getBody()).isEqualTo(responseObject);
+    }
 
+    @Test
+    void paperGetTitleAndAbstractError() {
+        Mockito.when(userService.validateUser(4)).thenReturn(true);
+        Mockito.when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class)))
+                .thenReturn(Optional.empty());
+        ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(3, 4);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

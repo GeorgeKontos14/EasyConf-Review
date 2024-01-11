@@ -62,8 +62,8 @@ class PaperServiceTest {
                 "link1", List.of(1, 2, 3), "link2");
 
         ResponseEntity<PaperResponse> result = ResponseEntity.of(Optional.of(paperResponse));
-        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class)
-                , eq(PaperResponse.class))).thenReturn(result);
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+                eq(PaperResponse.class))).thenReturn(result);
         Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3, restTemplate);
         assertThat(response).isEqualTo(Optional.of(paperResponse));
     }
