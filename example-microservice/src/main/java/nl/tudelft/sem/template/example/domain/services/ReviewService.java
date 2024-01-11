@@ -116,6 +116,24 @@ public class ReviewService {
     }
 
     /**
+     * Method that retrieves all reviews assigned to a specific reviewer
+     * @param reviewerId the ID of the reviewer
+     * @return the List of reviews assigned to the reviewer in question
+     */
+    public List<Review> reviewsByReviewer(int reviewerId) {
+        return reviewRepository.findReviewByReviewerId(reviewerId);
+    }
+
+    /**
+     * Method that retrieves all reviews for a specific paper.
+     * @param paperId the ID of the paper
+     * @return the list of reviews for the paper in question.
+     */
+    public List<Review> reviewsByPaper(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
+    }
+
+    /**
      * Method that retrieves a pc chair from the repository and
      * checks whether they have access to a given track.
      * @param userID the ID of the user(PC Chair)
@@ -125,6 +143,15 @@ public class ReviewService {
     public boolean verifyPcChair(int userID, int trackID) {
         Optional<PcChair> chair = pcChairRepository.findById(userID);
         return chair.map(pcChair -> pcChair.hasAccess(trackID)).orElse(false);
+    }
+
+    /**
+     * Method that retrieves a review with a given ID, if one exists.
+     * @param reviewId the ID in question.
+     * @return an optional object, containing the review if one exists; empty otherwise.
+     */
+    public Optional<Review> findReviewObjectWithId(int reviewId) {
+        return reviewRepository.findById(reviewId);
     }
 
 

@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.domain.models;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -10,6 +11,7 @@ import java.util.List;
 @Getter
 @Entity
 public class PcChair {
+    @Setter
     @Id
     private Integer id;
 
@@ -18,11 +20,13 @@ public class PcChair {
     @Valid
     private List<Integer> tracks;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "listOfPapers")
     @Valid
     private List<Integer> papers;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "listOfComments")
     @Valid
@@ -50,17 +54,6 @@ public class PcChair {
         this.tracks = tracks;
         this.papers = new ArrayList<>();
         this.comments = new ArrayList<>();
-    }
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setPapers(List<Integer> papers) {
-        this.papers = papers;
-    }
-
-    public void setComments(List<Integer> comments) {
-        this.comments = comments;
     }
 
     /**

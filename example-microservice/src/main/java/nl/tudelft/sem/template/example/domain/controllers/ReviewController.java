@@ -3,8 +3,10 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import nl.tudelft.sem.template.api.ReviewApi;
+import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class ReviewController implements ReviewApi {
@@ -20,10 +23,14 @@ public class ReviewController implements ReviewApi {
     private final UserService userService;
     private final ReviewService reviewService;
 
-    public ReviewController(UserService userService, ReviewService reviewService) {
+    private final PaperService paperService;
+
+    public ReviewController(UserService userService, ReviewService reviewService, PaperService paperService) {
         this.userService = userService;
         this.reviewService = reviewService;
+        this.paperService = paperService;
     }
+
 
     @Override
     public ResponseEntity<Void> reviewAssignPapersPost(
@@ -70,13 +77,59 @@ public class ReviewController implements ReviewApi {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    /**
-     * Null check for the start of each method
-     * @param userId the user ID
-     * @param trackID the track ID
-     * @param reviews the reviews in question
-     * @return true if-f nothing is null/empty
-     */
+    @Override
+    public ResponseEntity<List<Review>> reviewFindAllReviewsByUserIDGet(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user the reviews of whom are returned.", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<Review> reviews = reviewService.reviewsByReviewer(userID);
+        return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
+    }
+
+    @Override
+    public ResponseEntity<List<Review>> reviewFindAllReviewsByPaperIdGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper the reviews of which are returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<Review> reviews = reviewService.reviewsByPaper(paperID);
+        return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
+    }
+
+    @Override
+    public ResponseEntity<Paper> reviewFindPaperByReviewIdGet(
+            @NotNull @Parameter(name = "reviewID", description = "The ID of the review for which the paper should be returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewID") Integer reviewID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0 || reviewID == null || reviewID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if (!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Optional<Review> review = reviewService.findReviewObjectWithId(reviewID);
+        if (review.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        int paperID = review.get().getPaperId();
+        Optional<Paper> paper = paperService.getPaperObjectWithId(paperID);
+        return paper.map(value -> new ResponseEntity<>(value, HttpStatus.ACCEPTED)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+
+        /**
+         * Null check for the start of each method
+         * @param userId the user ID
+         * @param trackID the track ID
+         * @param reviews the reviews in question
+         * @return true if-f nothing is null/empty
+         */
     private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
         return userId == null || trackID == null || reviews.isEmpty();
     }
