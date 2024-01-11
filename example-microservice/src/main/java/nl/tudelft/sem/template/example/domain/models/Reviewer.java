@@ -25,28 +25,25 @@ public class Reviewer {
      * This is a list of the reviews a single reviewer is involved in
      */
     @ElementCollection
-    @CollectionTable(name = "listOfReviews")
-    @Valid
     private List<Integer> reviews;
 
     /**
-     * This is a map of papers Ids to the reviewers preferences
+     * This is a list with the ids of all the reviewer preferences
      */
     @ElementCollection
-    @CollectionTable(name = "listOfPreferences")
-    @Valid
-    private HashMap<Integer, ReviewerPreferences.ReviewerPreferenceEnum> preferences;
+    private List<Integer> preferences;
+
 
     public Reviewer(Integer id) {
         this.id = id;
         this.reviews = new ArrayList<>();
-        this.preferences = new HashMap<>();
+        this.preferences = new ArrayList<>();
     }
 
     public Reviewer() {
         this.id = 0;
         this.reviews = new ArrayList<>();
-        this.preferences = new HashMap<>();
+        this.preferences = new ArrayList<>();
     }
 
 }
