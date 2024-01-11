@@ -2,15 +2,11 @@ package nl.tudelft.sem.template.example.domain.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.tudelft.sem.template.model.ReviewerPreferences;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Getter
