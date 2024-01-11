@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,8 +87,8 @@ class PaperServiceTest {
         Mockito.when(paperRepository.findById(1)).thenReturn(Optional.empty());
         Mockito.when(paperRepository.findById(2)).thenReturn(Optional.of(p));
         assertThat(paperService.paperGetPaperCommentsGet(1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+                .isEqualTo(new ArrayList<>());
         assertThat(paperService.paperGetPaperCommentsGet(2))
-                .isEqualTo(new ResponseEntity<>(List.of(c), HttpStatus.OK));
+                .isEqualTo(List.of(c));
     }
 }

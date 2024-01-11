@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -52,12 +53,11 @@ public class PaperService {
         return Optional.of(result.getBody());
     }
 
-    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(int paperId) {
+    public List<Comment> paperGetPaperCommentsGet(int paperId) {
         if (paperRepository.findById(paperId).isEmpty())
             // This probably shouldn't be like this, but it is like this in the specs.yaml
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        List<Comment> comments = commentRepository.findCommentByPaperId(paperId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
+            return new ArrayList<>(0);
+        return commentRepository.findCommentByPaperId(paperId);
     }
 
 }

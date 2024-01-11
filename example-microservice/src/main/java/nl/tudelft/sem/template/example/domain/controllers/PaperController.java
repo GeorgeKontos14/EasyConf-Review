@@ -94,7 +94,10 @@ public class PaperController implements PaperApi {
         if (!userService.validateUser(userID)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return paperService.paperGetPaperCommentsGet(paperID);
+        List<Comment> comments = paperService.paperGetPaperCommentsGet(paperID);
+        if (comments.isEmpty())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
     /**
