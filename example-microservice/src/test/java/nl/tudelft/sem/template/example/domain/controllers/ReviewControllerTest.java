@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class ReviewControllerTest {
@@ -76,7 +77,7 @@ public class ReviewControllerTest {
     }
 
     /**
-     * Test that returns 'not found' for the reviewFindPaperByReviewIdGet endpoint.
+     * Test that returns 'not found' or a successful response for the reviewFindPaperByReviewIdGet endpoint.
      */
     @Test
     public void findPaperByReviewIdLookForReviewAndPaperTest() {
@@ -103,5 +104,42 @@ public class ReviewControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Test that returns a bad request for the reviewFindAllReviewsByPaperIdGet endpoint.
+     */
+    @Test
+    public void findAllReviewsByPaperIdBadRequestTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByPaperIdGet(null, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllReviewsByPaperIdGet(-1, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllReviewsByPaperIdGet(1, null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllReviewsByPaperIdGet(1, -1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Test that returns 'unauthorized' for the reviewFindAllReviewsByPaperIdGet endpoint.
+     */
+    @Test
+    public void findAllReviewsByPaperIdUnauthorizedTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByPaperIdGet(1, 2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Mockito.verify(userService).validateUser(2);
+    }
+
+    /**
+     * Test that returns a successful for the reviewFindAllReviewsByPaperIdGet endpoint.
+     */
+    @Test
+    public void findAllReviewsByPaperIdOkTest() {
+        List<Review> reviews = Arrays.asList(
+                buildReview(1,1,2), buildReview(2,1,3));
+        Mockito.when(reviewService.reviewsByPaper(1)).thenReturn(reviews);
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByPaperIdGet(1, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody()).isEqualTo(reviews);
+    }
 
 }

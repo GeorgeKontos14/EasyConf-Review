@@ -25,6 +25,7 @@ public class ReviewController implements ReviewApi {
 
     private final UserService userService;
     private final ReviewService reviewService;
+
     private final PaperService paperService;
 
     public ReviewController(UserService userService, ReviewService reviewService, PaperService paperService) {
@@ -32,6 +33,7 @@ public class ReviewController implements ReviewApi {
         this.reviewService = reviewService;
         this.paperService = paperService;
     }
+
 
     @Override
     public ResponseEntity<Void> reviewAssignPapersPost(
@@ -92,6 +94,20 @@ public class ReviewController implements ReviewApi {
     }
 
     @Override
+    public ResponseEntity<List<Review>> reviewFindAllReviewsByPaperIdGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper the reviews of which are returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<Review> reviews = reviewService.reviewsByPaper(paperID);
+        return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
+    }
+
+    @Override
     public ResponseEntity<Paper> reviewFindPaperByReviewIdGet(
             @NotNull @Parameter(name = "reviewID", description = "The ID of the review for which the paper should be returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewID") Integer reviewID,
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
@@ -99,7 +115,7 @@ public class ReviewController implements ReviewApi {
         if (userID == null || userID < 0 || reviewID == null || reviewID < 0)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         boolean isUserValid = userService.validateUser(userID);
-        if(!isUserValid)
+        if (!isUserValid)
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         Optional<Review> review = reviewService.findReviewObjectWithId(reviewID);
         if (review.isEmpty())
@@ -110,13 +126,13 @@ public class ReviewController implements ReviewApi {
     }
 
 
-    /**
-     * Null check for the start of each method
-     * @param userId the user ID
-     * @param trackID the track ID
-     * @param reviews the reviews in question
-     * @return true if-f nothing is null/empty
-     */
+        /**
+         * Null check for the start of each method
+         * @param userId the user ID
+         * @param trackID the track ID
+         * @param reviews the reviews in question
+         * @return true if-f nothing is null/empty
+         */
     private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
         return userId == null || trackID == null || reviews.isEmpty();
     }
