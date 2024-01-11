@@ -11,11 +11,11 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -144,6 +144,106 @@ public class ReviewControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(reviews);
     }
+
+    @Test
+    public void assignPapersBadRequestTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .reviewAssignPapersPost(null, 1, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .reviewAssignPapersPost(1, null, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .reviewAssignPapersPost(1, 1, new ArrayList<>());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void assignPapersUnauthorizedTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response =
+                sut.reviewAssignPapersPost(1,2,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void assignPapersOkTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .reviewAssignPapersPost(1,1,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(reviewService).saveReviews(Arrays.asList(r1, r2));
+    }
+
+    @Test
+    public void changeReviewsBadRequestTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .changeReviews(null, 1, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .changeReviews(1, null, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .changeReviews(1, 1, new ArrayList<>());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void changeReviewsUnauthorizedTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        Mockito.when(reviewService.verifyPcChair(3,1)).thenReturn(false);
+        Mockito.when(userService.validateUser(3)).thenReturn(true);
+        ResponseEntity<Void> response =
+                sut.changeReviews(1,2,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        response =
+                sut.changeReviews(1,3,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void ChangeReviewsOkTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(true);
+        ResponseEntity<Void> response = sut
+                .changeReviews(1,1,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(reviewService).saveReviews(Arrays.asList(r1, r2));
+    }
+
+    @Test
+    public void findAllReviewsByUserIdBadRequestTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllReviewsByUserIDGet(-1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void findAllReviewsByUserIdUnauthorizedTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Mockito.verify(userService).validateUser(2);
+    }
+
+    @Test
+    public void findAllReviewsByUserIdOkTest() {
+        List<Review> reviews = Arrays.asList(
+                buildReview(1,1,2), buildReview(2,1,3));
+        Mockito.when(reviewService.reviewsByReviewer(1)).thenReturn(reviews);
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody()).isEqualTo(reviews);
+    }
+
 
     @Test
     void reviewEditConfidenceScorePut() {
