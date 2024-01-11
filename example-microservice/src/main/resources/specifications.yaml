@@ -567,9 +567,8 @@ paths:
             content:
               application/json:
                 schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Paper'
+                  type: string
+                example: '{"abstract":"Example Abstract","title":"Example Title"}'
 
           400:
             description: invalid input
@@ -722,14 +721,6 @@ components:
             format: int32
             description: the ids of all the authors of the paper
             example: 2192
-        title:
-          type: string
-          description: The title of the paper
-          example: Intro to DP;
-        abstract:
-          type: string
-          description: The abstract of the paper
-          example: Small research project into DP
         final_verdict:
           x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string

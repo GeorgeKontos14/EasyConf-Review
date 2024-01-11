@@ -1,15 +1,14 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.util.List;
 import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
-import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.model.Paper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,10 +58,12 @@ class PaperServiceTest {
 
     @Test
     void getPaperObjectFromSubmissions() {
-        PaperResponse paperResponse = new PaperResponse("hello", List.of(1, 2, 3), 4, "abstr", List.of("key1","key2"), "link1", List.of(1,2,3), "link2");
+        PaperResponse paperResponse = new PaperResponse("hello", List.of(1, 2, 3), 4, "abstr", List.of("key1", "key2"),
+                "link1", List.of(1, 2, 3), "link2");
 
         ResponseEntity<PaperResponse> result = ResponseEntity.of(Optional.of(paperResponse));
-        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(PaperResponse.class))).thenReturn(result);
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class)
+                , eq(PaperResponse.class))).thenReturn(result);
         Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3, restTemplate);
         assertThat(response).isEqualTo(Optional.of(paperResponse));
     }

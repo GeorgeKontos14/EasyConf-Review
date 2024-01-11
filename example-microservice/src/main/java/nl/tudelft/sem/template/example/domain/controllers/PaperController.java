@@ -1,8 +1,12 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -67,7 +71,8 @@ public class PaperController implements PaperApi {
      * @param userID The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
-    public ResponseEntity<List<Paper>> paperGetTitleAndAbstractGet(
+    @Override
+    public ResponseEntity<String> paperGetTitleAndAbstractGet(
             @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
                     required = true, in = ParameterIn.QUERY)
                         @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
@@ -89,12 +94,13 @@ public class PaperController implements PaperApi {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
 
-            Paper response = new Paper();
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("title", foundPaper.get().getTitle());
+            responseMap.put("abstract", foundPaper.get().getAbstract());
 
-            response.setTitle(foundPaper.get().getTitle());
-            response.setAbstract(foundPaper.get().getAbstract());
-
-            return new ResponseEntity<>(List.of(response), HttpStatus.OK);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String response = objectMapper.writeValueAsString(responseMap);
+            return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
             e.printStackTrace();
