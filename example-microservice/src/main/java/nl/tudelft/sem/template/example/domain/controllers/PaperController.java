@@ -15,6 +15,7 @@ import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
@@ -69,6 +70,37 @@ public class PaperController implements PaperApi {
     }
 
     /**
+     * GET /paper/getPaperComments : Get comments for this paper
+     * Given the paper ID, return a list of all comments made on this specific paper that are accessible by the given user
+     *
+     * @param paperID The ID of the paper for which the PC Chair comments are returned (required)
+     * @param userID  The ID of the user, used for authorization (required)
+     * @return Successful response (status code 200)
+     * or Invalid Paper ID (status code 400)
+     * or Server Error (status code 500)
+     */
+    @Override
+    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "userID", required = true) Integer userID
+    ) {
+        if (userID == null || paperID == null || paperID < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (!userService.validateUser(userID)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<Comment> comments = paperService.paperGetPaperCommentsGet(paperID);
+        if (comments.isEmpty())
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+
+    /**
      * endpoint for getting title and abstract
      * @param paperID The ID of the paper we want to view the title and abstract (required)
      * @param userID The ID of the user, used for authorization (required)
@@ -109,6 +141,8 @@ public class PaperController implements PaperApi {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+
     }
 
     @Override

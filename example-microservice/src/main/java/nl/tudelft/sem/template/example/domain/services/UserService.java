@@ -13,7 +13,6 @@ public class UserService {
      */
     public boolean validateUser(int userId) {
         //TODO
-
-        return true;
+        return userId >= 0;
     }
 }

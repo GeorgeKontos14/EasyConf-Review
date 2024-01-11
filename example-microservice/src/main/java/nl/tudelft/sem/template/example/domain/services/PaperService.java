@@ -1,9 +1,14 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+
+import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -12,10 +17,12 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class PaperService {
 
-    private transient PaperRepository paperRepository;
+    private final transient PaperRepository paperRepository;
+    private final transient CommentRepository commentRepository;
 
-    public PaperService(PaperRepository paperRepository) {
+    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository) {
         this.paperRepository = paperRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -44,6 +51,13 @@ public class PaperService {
             return Optional.empty();
         }
         return Optional.of(result.getBody());
+    }
+
+    public List<Comment> paperGetPaperCommentsGet(int paperId) {
+        if (paperRepository.findById(paperId).isEmpty())
+            // This probably shouldn't be like this, but it is like this in the specs.yaml
+            return new ArrayList<>(0);
+        return commentRepository.findCommentByPaperId(paperId);
     }
 
 }

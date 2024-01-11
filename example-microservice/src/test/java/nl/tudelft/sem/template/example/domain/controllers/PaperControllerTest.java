@@ -12,6 +12,7 @@ import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,6 +157,24 @@ public class PaperControllerTest {
     }
 
     @Test
+    void paperGetPaperCommentsGetInvalidTest() {
+        ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(paperController.paperGetPaperCommentsGet(null, 1)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(1, null)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(-1, 1)).isEqualTo(response);
+
+        assertThat(paperController.paperGetPaperCommentsGet(1, -1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void getPaperCommentTest() {
+        Paper p = new Paper();
+        p.id(1);
+        Mockito.when(paperService.getPaperObjectWithId(1)).thenReturn(Optional.of(p));
+        paperController.paperGetPaperByIDGet(1, 1);
+    }
+
     public void getPreferencesByPaperBadRequestTest() {
         ResponseEntity<List<ReviewerPreferences>> response = paperController
                 .paperGetPreferencesByPaperGet(null, 1);
@@ -193,4 +212,6 @@ public class PaperControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
     }
+
+
 }

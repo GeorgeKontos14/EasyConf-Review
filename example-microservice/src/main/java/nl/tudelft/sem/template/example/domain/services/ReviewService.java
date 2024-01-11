@@ -1,8 +1,11 @@
 package nl.tudelft.sem.template.example.domain.services;
 
 import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import java.util.*;
@@ -14,15 +17,19 @@ public class ReviewService {
 
     private transient final ReviewRepository reviewRepository;
     private transient final PcChairRepository pcChairRepository;
+    private transient final ReviewerRepository reviewerRepository;
+    private transient final CommentRepository commentRepository;
 
     /**
      *  Constructor for the Review Service
      * @param reviewRepository the repositories where reviews are meant to be stored.
      * @param pcChairRepository the repository containing pcChairs
      */
-    public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository) {
+    public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository, ReviewerRepository reviewerRepository, CommentRepository commentRepository) {
         this.reviewRepository = reviewRepository;
         this.pcChairRepository = pcChairRepository;
+        this.reviewerRepository = reviewerRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -161,6 +168,11 @@ public class ReviewService {
 
     public Review saveAndReturnReview(Review review) {
         return reviewRepository.save(review);
+    }
+
+    public Comment reviewPostCommentPost(Comment comment) {
+        commentRepository.save(comment);
+        return comment;
     }
 }
 

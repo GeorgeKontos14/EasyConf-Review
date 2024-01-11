@@ -3,8 +3,11 @@ package nl.tudelft.sem.template.example.domain.services;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
@@ -18,6 +21,8 @@ public class ReviewServiceTest {
     private ReviewService sut;
     private ReviewRepository repo;
     private PcChairRepository pcChairRepository;
+    private ReviewerRepository reviewerRepository;
+    private CommentRepository commentRepository;
     private List<Paper> papers;
     private List<ReviewerPreferences> prefs;
     private Map<Integer, List<Integer>> conflicts;
@@ -29,7 +34,9 @@ public class ReviewServiceTest {
     public void setup() {
         repo = Mockito.mock(ReviewRepository.class);
         pcChairRepository = Mockito.mock(PcChairRepository.class);
-        sut = new ReviewService(repo, pcChairRepository);
+        reviewerRepository = Mockito.mock(ReviewerRepository.class);
+        commentRepository = Mockito.mock(CommentRepository.class);
+        sut = new ReviewService(repo, pcChairRepository, reviewerRepository, commentRepository);
         Paper p1 = new Paper();
         p1.setId(1);
         p1.setAuthors(Arrays.asList(1,2,3,4));
@@ -206,5 +213,11 @@ public class ReviewServiceTest {
         assertThat(sut.verifyPcChair(1, 1)).isTrue();
         assertThat(sut.verifyPcChair(1, 4)).isFalse();
         assertThat(sut.verifyPcChair(2, 3)).isFalse();
+    }
+
+    @Test
+    public void postCommentTest() {
+        Comment c = new Comment();
+        assertThat(sut.reviewPostCommentPost(c)).isEqualTo(c);
     }
 }
