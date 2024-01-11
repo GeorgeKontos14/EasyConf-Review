@@ -734,23 +734,19 @@ components:
             - Rejected
           example: Rejected
     Reviewer_Preferences:
-      x-class-extra-annotation: "@javax.persistence.Entity @javax.persistence.Table(name = \"reviewerPreferences\")"
       type: object
       properties:
         paper_id:
-          x-field-extra-annotation: "@javax.persistence.Column(name=\"paper_id\")"
           type: integer
           format: int32
           description: The id of the paper for which a reviewer express their preference
           example: 12922
         reviewer_id:
-          x-field-extra-annotation: "@javax.persistence.Column(name=\"reviewer_id\")"
           type: integer
           format: int32
           description: The id of the reviewer that express their preference.
           example: 510
         reviewer_preference:
-          x-field-extra-annotation: "@javax.persistence.Enumerated(javax.persistence.EnumType.STRING)"
           type: string
           description: Indication of whether the reviewer can review the paper in question
           enum:

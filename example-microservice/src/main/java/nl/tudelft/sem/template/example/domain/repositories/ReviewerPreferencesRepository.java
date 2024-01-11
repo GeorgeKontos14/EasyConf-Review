@@ -1,11 +1,11 @@
 package nl.tudelft.sem.template.example.domain.repositories;
 
-import nl.tudelft.sem.template.model.ReviewerPreferences;
+import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ReviewerPreferencesRepository extends JpaRepository<ReviewerPreferences, Integer> {
-    List<ReviewerPreferences> findAllByReviewerId(Integer reviewerId);
-    List<ReviewerPreferences> findAllByPaperId(Integer paperId);
+public interface ReviewerPreferencesRepository extends JpaRepository<PreferenceEntity, Integer> {
+    List<PreferenceEntity> findAllByReviewerId(Integer reviewerId);
+    List<PreferenceEntity> findAllByPaperId(Integer paperId);
 }
