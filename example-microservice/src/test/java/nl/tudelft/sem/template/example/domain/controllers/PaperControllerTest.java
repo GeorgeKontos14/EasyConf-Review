@@ -10,6 +10,7 @@ import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -133,5 +134,21 @@ public class PaperControllerTest {
                 .thenReturn(Optional.empty());
         ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(3, 4);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void paperGetPaperCommentsGetInvalidTest() {
+        ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(paperController.paperGetPaperCommentsGet(null, 1)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(1, null)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(-1, 1)).isEqualTo(response);
+
+        assertThat(paperController.paperGetPaperCommentsGet(1, -1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void getPaperCommentTest() {
+
     }
 }

@@ -77,8 +77,21 @@ public class PaperController implements PaperApi {
      * or Server Error (status code 500)
      */
     @Override
-    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(Integer paperID, Integer userID) {
-        return PaperApi.super.paperGetPaperCommentsGet(paperID, userID);
+    public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "paperID", required = true) Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY)
+            @Valid @RequestParam(value = "userID", required = true) Integer userID
+    ) {
+        if (userID == null || paperID == null || paperID < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (!userService.validateUser(userID)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return paperService.paperGetPaperCommentsGet(paperID);
     }
 
     /**
