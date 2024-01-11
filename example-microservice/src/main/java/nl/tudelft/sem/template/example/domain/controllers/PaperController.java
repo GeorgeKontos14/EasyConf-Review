@@ -13,9 +13,11 @@ import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,11 +30,12 @@ public class PaperController implements PaperApi {
 
     private UserService userService;
     private PaperService paperService;
+    private ReviewerPreferencesService reviewerPreferencesService;
 
-
-    PaperController(UserService userService, PaperService paperService) {
+    PaperController(UserService userService, PaperService paperService, ReviewerPreferencesService reviewerPreferencesService) {
         this.userService = userService;
         this.paperService = paperService;
+        this.reviewerPreferencesService = reviewerPreferencesService;
     }
 
     @Override
@@ -137,5 +140,19 @@ public class PaperController implements PaperApi {
         }
 
 
+    }
+
+    @Override
+    public ResponseEntity<List<ReviewerPreferences>> paperGetPreferencesByPaperGet(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to see the reviewer preferences for", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForPaper(paperID);
+        return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
     }
 }
