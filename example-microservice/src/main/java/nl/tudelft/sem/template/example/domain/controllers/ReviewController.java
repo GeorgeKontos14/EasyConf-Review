@@ -150,4 +150,11 @@ public class ReviewController implements ReviewApi {
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
     }
 
+
+    public ResponseEntity<Review> reviewEditOverallScorePut(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID,
+            @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
+    ) {
+        return reviewEditConfidenceScorePut(userID, review);
+    }
 }
