@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ReviewerPreferencesRepository extends JpaRepository<ReviewerPreferences, Integer> {
     List<ReviewerPreferences> findAllByReviewerId(Integer reviewerId);
+    List<ReviewerPreferences> findAllByPaperId(Integer paperId);
 }

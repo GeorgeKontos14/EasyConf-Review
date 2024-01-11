@@ -21,9 +21,18 @@ public class ReviewerPreferencesService {
     /**
      * Finds all the preferences of a reviewer.
      * @param reviewerId the id of the reviewer in question.
-     * @return the list of review preferences of a given reviewer.
+     * @return the list of reviewer preferences of a given reviewer.
      */
     public List<ReviewerPreferences> getPreferencesForReviewer(int reviewerId) {
         return reviewerPreferencesRepository.findAllByReviewerId(reviewerId);
+    }
+
+    /**
+     * Finds all the preferences for a paper.
+     * @param paperId the id of the paper in question.
+     * @return the list of reviewer preferences for a given paper.
+     */
+    public List<ReviewerPreferences> getPreferencesForPaper(int paperId) {
+        return reviewerPreferencesRepository.findAllByPaperId(paperId);
     }
 }
