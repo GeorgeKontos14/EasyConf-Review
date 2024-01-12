@@ -12,6 +12,7 @@ import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
@@ -19,6 +20,7 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,7 @@ public class PaperControllerTest {
     private PaperService paperService;
     private UserService userService;
     private ReviewerPreferencesService reviewerPreferencesService;
+    private ReviewService reviewService;
     private PaperController paperController;
 
     private Paper goodPaper;
@@ -66,7 +69,8 @@ public class PaperControllerTest {
         paperService = Mockito.mock(PaperService.class);
         userService = Mockito.mock(UserService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
-        paperController = new PaperController(userService, paperService, reviewerPreferencesService);
+        reviewService = Mockito.mock(ReviewService.class);
+        paperController = new PaperController(userService, paperService, reviewerPreferencesService, reviewService);
     }
 
     @Test
@@ -270,12 +274,16 @@ public class PaperControllerTest {
                 .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
 
         Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
-        Mockito.when(paperService.paperGetAllPapersForIDGet(2))
+        Mockito.when(reviewService.findAllPapersByReviewerId(2))
+                        .thenReturn(List.of(5));
+        Mockito.when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(null);
         assertThat(paperController.paperGetAllPapersForIDGet(2))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        Mockito.when(paperService.paperGetAllPapersForIDGet(3))
+        Mockito.when(reviewService.findAllPapersByReviewerId(2))
+                .thenReturn(List.of(3));
+        Mockito.when(paperService.findAllPapersForIdList(List.of(3)))
                 .thenReturn(new ArrayList<>(0));
         assertThat(paperController.paperGetAllPapersForIDGet(3))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -288,7 +296,7 @@ public class PaperControllerTest {
 
         Paper p = new Paper();
         p.id(5);
-        Mockito.when(paperService.paperGetAllPapersForIDGet(1))
+        Mockito.when(paperService.findAllPapersForIdList(List.of(1)))
                 .thenReturn(List.of(p));
         assertThat(paperController.paperGetAllPapersForIDGet(1))
                 .isEqualTo(new ResponseEntity<>(List.of(p), HttpStatus.OK));

@@ -32,7 +32,6 @@ class PaperServiceTest {
     private RestTemplate restTemplate;
     private PaperRepository paperRepository;
     private CommentRepository commentRepository;
-    private ReviewService reviewService;
     private PaperService paperService;
     private Paper goodPaper;
 
@@ -50,8 +49,7 @@ class PaperServiceTest {
         paperRepository = Mockito.mock(PaperRepository.class);
         restTemplate = Mockito.mock(RestTemplate.class);
         commentRepository = Mockito.mock(CommentRepository.class);
-        reviewService = Mockito.mock(ReviewService.class);
-        paperService = new PaperService(paperRepository, commentRepository, reviewService);
+        paperService = new PaperService(paperRepository, commentRepository);
     }
 
     @Test
@@ -122,12 +120,6 @@ class PaperServiceTest {
         p.id(1);
         Mockito.when(paperRepository.findAllById(List.of(1)))
                 .thenReturn(List.of(p));
-        Review r = new Review();
-        r.id(7);
-        r.reviewerId(5);
-        r.paperId(1);
-        Mockito.when(reviewService.findAllPapersByReviewerId(5))
-                .thenReturn(List.of(1));
-        assertThat(paperService.paperGetAllPapersForIDGet(5)).isEqualTo(List.of(p));
+        assertThat(paperService.findAllPapersForIdList(List.of(1))).isEqualTo(List.of(p));
     }
 }

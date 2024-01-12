@@ -14,10 +14,12 @@ import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +35,13 @@ public class PaperController implements PaperApi {
     private final UserService userService;
     private final PaperService paperService;
     private final ReviewerPreferencesService reviewerPreferencesService;
+    private final ReviewService reviewService;
 
-    PaperController(UserService userService, PaperService paperService, ReviewerPreferencesService reviewerPreferencesService) {
+    PaperController(UserService userService, PaperService paperService, ReviewerPreferencesService reviewerPreferencesService, ReviewService reviewService) {
         this.userService = userService;
         this.paperService = paperService;
         this.reviewerPreferencesService = reviewerPreferencesService;
+        this.reviewService = reviewService;
     }
 
     @Override
@@ -164,14 +168,12 @@ public class PaperController implements PaperApi {
         if (!userService.validateUser(reviewerId)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        List<Paper> papers = paperService.paperGetAllPapersForIDGet(reviewerId);
+        List<Paper> papers = paperService.findAllPapersForIdList(reviewService.findAllPapersByReviewerId(reviewerId));
         if (papers == null)
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         if (papers.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(papers, HttpStatus.OK);
-
-
     }
 
     @Override
