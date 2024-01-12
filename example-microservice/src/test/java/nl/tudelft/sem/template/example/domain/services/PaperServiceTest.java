@@ -114,6 +114,7 @@ class PaperServiceTest {
         Mockito.when(paperRepository.findById(1)).thenReturn(Optional.empty());
         assertThat(paperService.paperUpdatePaperStatusPut(1, null))
                 .isEqualTo(false);
+    }
 
     @Test
     void paperGetAllPapersForIDGetTest() {
