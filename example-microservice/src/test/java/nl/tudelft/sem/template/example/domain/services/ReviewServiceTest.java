@@ -231,4 +231,11 @@ public class ReviewServiceTest {
                 .thenReturn(List.of(r));
         assertThat(sut.findAllPapersByReviewerId(5)).isEqualTo(List.of(1));
     }
+
+    @Test
+    public void findAllReviewsByPaperId() {
+        Mockito.when(repo.findReviewsByPaperId(1))
+                .thenReturn(List.of(new Review()));
+        assertThat(sut.findAllReviewsByPaperId(1)).isEqualTo(List.of(new Review()));
+    }
 }
