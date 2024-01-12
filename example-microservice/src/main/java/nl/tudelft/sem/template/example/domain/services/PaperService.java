@@ -17,7 +17,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.persistence.criteria.CriteriaBuilder;
 
 @Service
 public class PaperService {
@@ -39,25 +38,23 @@ public class PaperService {
      * @return the found Paper object, or null if there is no object found
      */
     public Optional<Paper> getPaperObjectWithId(int paperId) {
-        Optional<Paper> foundPaper = paperRepository.findById(paperId);
-        return foundPaper;
+        return paperRepository.findById(paperId);
     }
 
-    public Optional<PaperResponse> getPaperObjectFromSubmissions(int paperId, RestTemplate restTemplate)
-    {
-        String submissionsUri = "localhost:8082/submissions/"+paperId+"/info";
+    public Optional<PaperResponse> getPaperObjectFromSubmissions(int paperId, RestTemplate restTemplate) {
+        String submissionsUri = "localhost:8082/submissions/" + paperId + "/info";
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-        ResponseEntity<PaperResponse> result = null;
+        ResponseEntity<PaperResponse> result;
         try {
             result = restTemplate.exchange(submissionsUri, HttpMethod.GET, entity, PaperResponse.class);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return Optional.empty();
         }
-        return Optional.of(result.getBody());
+        return Optional.ofNullable(result.getBody());
     }
 
     public List<Comment> paperGetPaperCommentsGet(int paperId) {
