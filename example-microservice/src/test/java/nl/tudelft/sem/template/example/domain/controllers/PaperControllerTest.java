@@ -296,7 +296,9 @@ public class PaperControllerTest {
 
         Paper p = new Paper();
         p.id(5);
-        Mockito.when(paperService.findAllPapersForIdList(List.of(1)))
+        Mockito.when(reviewService.findAllPapersByReviewerId(1))
+                        .thenReturn(List.of(5));
+        Mockito.when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(List.of(p));
         assertThat(paperController.paperGetAllPapersForIDGet(1))
                 .isEqualTo(new ResponseEntity<>(List.of(p), HttpStatus.OK));
