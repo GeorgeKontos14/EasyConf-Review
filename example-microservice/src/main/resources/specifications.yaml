@@ -732,6 +732,7 @@ components:
           enum:
             - Accepted
             - Rejected
+            - Unresolved
           example: Rejected
     Reviewer_Preferences:
       type: object
