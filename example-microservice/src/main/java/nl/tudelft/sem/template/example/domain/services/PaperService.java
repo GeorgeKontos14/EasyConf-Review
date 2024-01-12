@@ -64,6 +64,31 @@ public class PaperService {
         return commentRepository.findCommentByPaperId(paperId);
     }
 
+    /**
+     * This method checks whether the paper already exists in the db
+     * @param paperId the paper id to check
+     * @return true if the paper is in the db
+     */
+    public boolean isExistingPaper(int paperId) {
+        return paperRepository.existsById(paperId);
+    }
+
+    /**
+     * This method will update the final verdict of a given paper
+     * @param paperId the id of the paper to update
+     * @param verdict to set
+     * @return whether the method succeeded
+     */
+    public boolean paperUpdatePaperStatusPut(int paperId, Paper.FinalVerdictEnum verdict) {
+        Optional<Paper> optional = paperRepository.findById(paperId);
+        if (optional.isEmpty())
+            return false;
+        Paper paper = optional.get();
+        paper.finalVerdict(verdict);
+        paperRepository.save(paper);
+        return true;
+    }
+
     public List<Paper> paperGetAllPapersForIDGet(int reviewerId) {
         List<Integer> paperIds = reviewService.findAllPapersByReviewerId(reviewerId);
         return paperRepository.findAllById(paperIds);

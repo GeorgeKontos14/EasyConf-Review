@@ -218,6 +218,46 @@ public class PaperControllerTest {
     }
 
     @Test
+    void paperUpdatePaperStatusPutTest() {
+        Mockito.when(paperService.isExistingPaper(5)).thenReturn(true);
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, null)).thenReturn(true);
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.ACCEPTED))
+                .thenReturn(true);
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.REJECTED))
+                .thenReturn(true);
+
+        assertThat(paperController.paperUpdatePaperStatusPut(5, "Unresolved", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
+        assertThat(paperController.paperUpdatePaperStatusPut(5, "Accepted", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
+        assertThat(paperController.paperUpdatePaperStatusPut(5, "Rejected", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
+    }
+
+    @Test
+    void paperUpdatePaperStatusPutTest2() {
+        assertThat(paperController.paperUpdatePaperStatusPut(null, "", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(paperController.paperUpdatePaperStatusPut(1, "", null))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(paperController.paperUpdatePaperStatusPut(-1, "", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(paperController.paperUpdatePaperStatusPut(1, "", -1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(paperController.paperUpdatePaperStatusPut(1, null, 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+
+        Mockito.when(paperService.isExistingPaper(3)).thenReturn(false);
+        assertThat(paperController.paperUpdatePaperStatusPut(3, "", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+
+        Mockito.when(paperService.isExistingPaper(5)).thenReturn(true);
+        assertThat(paperController.paperUpdatePaperStatusPut(5, "Bad input", 1))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+
+    }
+
+    @Test
     public void paperGetAllPapersForIDGetFailTest() {
         ResponseEntity<List<Paper>> badRequest = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         assertThat(paperController.paperGetAllPapersForIDGet(null))
