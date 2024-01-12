@@ -220,4 +220,15 @@ public class ReviewServiceTest {
         Comment c = new Comment();
         assertThat(sut.reviewPostCommentPost(c)).isEqualTo(c);
     }
+
+    @Test
+    public void findAllPapersByReviewerIdTest() {
+        Review r = new Review();
+        r.id(7);
+        r.reviewerId(5);
+        r.paperId(1);
+        Mockito.when(repo.findReviewByReviewerId(5))
+                .thenReturn(List.of(r));
+        assertThat(sut.findAllPapersByReviewerId(5)).isEqualTo(List.of(1));
+    }
 }

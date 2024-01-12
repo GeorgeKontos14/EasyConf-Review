@@ -9,6 +9,8 @@ import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.stereotype.Service;
 
@@ -173,6 +175,14 @@ public class ReviewService {
     public Comment reviewPostCommentPost(Comment comment) {
         commentRepository.save(comment);
         return comment;
+    }
+
+    public List<Integer> findAllPapersByReviewerId(int reviewerId) {
+        return reviewRepository
+                .findReviewByReviewerId(reviewerId)
+                .stream()
+                .map(Review::getPaperId)
+                .collect(Collectors.toList());
     }
 }
 

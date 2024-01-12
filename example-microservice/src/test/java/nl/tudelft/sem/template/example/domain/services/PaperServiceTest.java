@@ -11,16 +11,16 @@ import java.util.Optional;
 
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +30,7 @@ class PaperServiceTest {
     private RestTemplate restTemplate;
     private PaperRepository paperRepository;
     private CommentRepository commentRepository;
+    private ReviewService reviewService;
     private PaperService paperService;
     private Paper goodPaper;
 
@@ -47,7 +48,8 @@ class PaperServiceTest {
         paperRepository = Mockito.mock(PaperRepository.class);
         restTemplate = Mockito.mock(RestTemplate.class);
         commentRepository = Mockito.mock(CommentRepository.class);
-        paperService = new PaperService(paperRepository, commentRepository);
+        reviewService = Mockito.mock(ReviewService.class);
+        paperService = new PaperService(paperRepository, commentRepository, reviewService);
     }
 
     @Test
@@ -90,5 +92,20 @@ class PaperServiceTest {
                 .isEqualTo(new ArrayList<>());
         assertThat(paperService.paperGetPaperCommentsGet(2))
                 .isEqualTo(List.of(c));
+    }
+
+    @Test
+    void paperGetAllPapersForIDGetTest() {
+        Paper p = new Paper();
+        p.id(1);
+        Mockito.when(paperRepository.findAllById(List.of(1)))
+                .thenReturn(List.of(p));
+        Review r = new Review();
+        r.id(7);
+        r.reviewerId(5);
+        r.paperId(1);
+        Mockito.when(reviewService.findAllPapersByReviewerId(5))
+                .thenReturn(List.of(1));
+        assertThat(paperService.paperGetAllPapersForIDGet(5)).isEqualTo(List.of(p));
     }
 }
