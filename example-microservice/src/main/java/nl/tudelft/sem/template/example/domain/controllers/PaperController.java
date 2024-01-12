@@ -145,6 +145,36 @@ public class PaperController implements PaperApi {
 
     }
 
+    /**
+     * GET /paper/getAllPapersForID : Gets all papers that are to be reviewed by a specific reviewer
+     * Get all the papers for which the review is assigned to a reviewer with a given reviewer id
+     *
+     * @param reviewerId the id of the reviewer for which the assigned papers should be returned (required)
+     * @return Successful response (status code 200)
+     * or Invalid Reviewer ID (status code 400)
+     * or Unauthorized (status code 401)
+     * or Not found (status code 404)
+     * or Server error (status code 500)
+     */
+    @Override
+    public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
+            "The ID of the paper we want to see the reviewer preferences for", required = true,
+            in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
+        if (reviewerId == null || reviewerId < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!userService.validateUser(reviewerId)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<Paper> papers = paperService.paperGetAllPapersForIDGet(reviewerId);
+        if (papers == null)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (papers.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(papers, HttpStatus.OK);
+
+
+    }
+
     @Override
     public ResponseEntity<List<ReviewerPreferences>> paperGetPreferencesByPaperGet(
             @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to see the reviewer preferences for", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,

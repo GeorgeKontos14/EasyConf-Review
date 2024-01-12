@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -213,5 +214,40 @@ public class PaperControllerTest {
         assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
     }
 
+    @Test
+    public void paperGetAllPapersForIDGetFailTest() {
+        ResponseEntity<List<Paper>> badRequest = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(paperController.paperGetAllPapersForIDGet(null))
+                .isEqualTo(badRequest);
+        assertThat(paperController.paperGetAllPapersForIDGet(-1))
+                .isEqualTo(badRequest);
 
+        Mockito.when(userService.validateUser(29)).thenReturn(false);
+        assertThat(paperController.paperGetAllPapersForIDGet(29))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+        Mockito.when(paperService.paperGetAllPapersForIDGet(2))
+                .thenReturn(null);
+        assertThat(paperController.paperGetAllPapersForIDGet(2))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        Mockito.when(paperService.paperGetAllPapersForIDGet(3))
+                .thenReturn(new ArrayList<>(0));
+        assertThat(paperController.paperGetAllPapersForIDGet(3))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+    }
+
+    @Test
+    public void paperGetAllPapersForIDGetTest() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+
+        Paper p = new Paper();
+        p.id(5);
+        Mockito.when(paperService.paperGetAllPapersForIDGet(1))
+                .thenReturn(List.of(p));
+        assertThat(paperController.paperGetAllPapersForIDGet(1))
+                .isEqualTo(new ResponseEntity<>(List.of(p), HttpStatus.OK));
+    }
 }

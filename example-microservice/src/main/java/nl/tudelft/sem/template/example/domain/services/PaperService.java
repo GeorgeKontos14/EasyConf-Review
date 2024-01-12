@@ -4,25 +4,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import javax.persistence.criteria.CriteriaBuilder;
 
 @Service
 public class PaperService {
 
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
+    private final transient ReviewRepository reviewRepository;
 
-    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository) {
+    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository, ReviewRepository reviewRepository) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     /**
@@ -58,6 +65,15 @@ public class PaperService {
             // This probably shouldn't be like this, but it is like this in the specs.yaml
             return new ArrayList<>(0);
         return commentRepository.findCommentByPaperId(paperId);
+    }
+
+    public List<Paper> paperGetAllPapersForIDGet(int reviewerId) {
+        List<Integer> paperIds = reviewRepository
+                .findReviewByReviewerId(reviewerId)
+                .stream()
+                .map(Review::getPaperId)
+                .collect(Collectors.toList());
+        return paperRepository.findAllById(paperIds);
     }
 
 }
