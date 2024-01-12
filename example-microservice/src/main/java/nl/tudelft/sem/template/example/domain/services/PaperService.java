@@ -23,12 +23,12 @@ public class PaperService {
 
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
-    private final transient ReviewRepository reviewRepository;
+    private final transient ReviewService reviewService;
 
-    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository, ReviewRepository reviewRepository) {
+    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository, ReviewService reviewService) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
-        this.reviewRepository = reviewRepository;
+        this.reviewService = reviewService;
     }
 
     /**
@@ -65,11 +65,7 @@ public class PaperService {
     }
 
     public List<Paper> paperGetAllPapersForIDGet(int reviewerId) {
-        List<Integer> paperIds = reviewRepository
-                .findReviewByReviewerId(reviewerId)
-                .stream()
-                .map(Review::getPaperId)
-                .collect(Collectors.toList());
+        List<Integer> paperIds = reviewService.findAllPapersByReviewerId(reviewerId);
         return paperRepository.findAllById(paperIds);
     }
 
