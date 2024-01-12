@@ -8,9 +8,7 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
