@@ -20,6 +20,7 @@ import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -158,4 +159,50 @@ public class PaperController implements PaperApi {
         List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForPaper(paperID);
         return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
     }
+
+    /**
+     * PUT /paper/updatePaperStatus : Updates a paper with provided ID with the provided new status
+     * Update the &#39;status&#39; field of the paper with provided id with a new status
+     *
+     * @param paperID The ID of the paper we want to change the status for (required)
+     * @param status  The new status of the paper. Can be &#39;Unresolved&#39;, &#39;Accepted&#39; or &#39;Rejected&#39; (required)
+     * @param userID  The ID of the user, used for authorization (required)
+     * @return Successful update (status code 200)
+     * or paperID not found (status code 400)
+     * or status not provided (status code 401)
+     * or Server error (status code 500)
+     */
+    @Override
+    public ResponseEntity<Void> paperUpdatePaperStatusPut(
+            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to change the status for",
+                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
+            @Parameter(name = "status", description = "The new status of the paper. Can be 'Unresolved', 'Accepted' " +
+                    "or 'Rejected'", required = true) String status,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
+    ) {
+        if (paperID == null || userID == null || paperID < 0 || userID < 0) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (status == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        if (!paperService.isExistingPaper(paperID)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Paper.FinalVerdictEnum verdict;
+        if (status.equals("Unresolved")) {
+            verdict = null;
+        } else if (status.equals("Accepted") || status.equals("Rejected")) {
+            verdict = Paper.FinalVerdictEnum.fromValue(status);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        boolean success = paperService.paperUpdatePaperStatusPut(paperID, verdict);
+        if (!success)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }

@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -90,5 +92,25 @@ class PaperServiceTest {
                 .isEqualTo(new ArrayList<>());
         assertThat(paperService.paperGetPaperCommentsGet(2))
                 .isEqualTo(List.of(c));
+    }
+
+    @Test
+    void isExistingPaperTest() {
+        Mockito.when(paperRepository.existsById(1)).thenReturn(false);
+        assertThat(paperService.isExistingPaper(1)).isEqualTo(false);
+    }
+
+    @Test
+    void paperUpdatePaperStatusPutTest() {
+        Mockito.when(paperRepository.findById(1)).thenReturn(Optional.of(new Paper()));
+        assertThat(paperService.paperUpdatePaperStatusPut(1, null))
+                .isEqualTo(true);
+    }
+
+    @Test
+    void paperUpdatePaperStatusPutFailTest() {
+        Mockito.when(paperRepository.findById(1)).thenReturn(Optional.empty());
+        assertThat(paperService.paperUpdatePaperStatusPut(1, null))
+                .isEqualTo(false);
     }
 }
