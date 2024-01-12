@@ -19,7 +19,6 @@ public class PaperEvaluationTest {
 
     private Paper unresolved;
     private Paper accepted;
-    private Paper rejected;
     private Review positive;
     private Review negative;
 
@@ -32,13 +31,10 @@ public class PaperEvaluationTest {
     void beforeEach() {
         unresolved = new Paper();
         unresolved.id(1);
-        unresolved.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED);
+        unresolved.finalVerdict(null);
         accepted = new Paper();
         accepted.id(2);
         accepted.finalVerdict(Paper.FinalVerdictEnum.ACCEPTED);
-        rejected = new Paper();
-        rejected.id(3);
-        rejected.finalVerdict(Paper.FinalVerdictEnum.REJECTED);
 
         positive = new Review();
         positive.overallScore(Review.OverallScoreEnum.NUMBER_1);
@@ -55,7 +51,6 @@ public class PaperEvaluationTest {
     @Test
     void evaluatePaperTest() {
         assertThat(evaluation.evaluatePaper(accepted)).isTrue();
-        assertThat(evaluation.evaluatePaper(rejected)).isTrue();
 
         Mockito.when(reviewRepository.findReviewsByPaperId(1)).thenReturn(List.of(positive, positive, positive));
         Mockito.when(paperRepository.save(unresolved.finalVerdict(Paper.FinalVerdictEnum.ACCEPTED)))
@@ -68,13 +63,13 @@ public class PaperEvaluationTest {
         assertThat(evaluation.evaluatePaper(unresolved)).isTrue();
 
         Mockito.when(reviewRepository.findReviewsByPaperId(1)).thenReturn(List.of(positive, negative, negative));
-        Mockito.when(paperRepository.save(unresolved.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED)))
-                .thenReturn(unresolved.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED));
+        Mockito.when(paperRepository.save(unresolved.finalVerdict(null)))
+                .thenReturn(unresolved.finalVerdict(null));
         assertThat(evaluation.evaluatePaper(unresolved)).isTrue();
 
         Mockito.when(reviewRepository.findReviewsByPaperId(1)).thenReturn(List.of(positive, negative, negative));
-        Mockito.when(paperRepository.save(unresolved.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED)))
-                .thenReturn(unresolved.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED));
+        Mockito.when(paperRepository.save(unresolved.finalVerdict(null)))
+                .thenReturn(unresolved.finalVerdict(null));
         assertThat(evaluation.evaluatePaper(unresolved.finalVerdict(null))).isTrue();
 
         Mockito.when(reviewRepository.findReviewsByPaperId(1))

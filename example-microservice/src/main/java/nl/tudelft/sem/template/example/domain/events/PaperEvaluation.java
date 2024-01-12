@@ -38,8 +38,7 @@ public class PaperEvaluation {
 
     public boolean evaluatePaper(Paper paper) {
         // If a paper already has a final verdict don't evaluate it
-        Paper.FinalVerdictEnum verdict = paper.getFinalVerdict();
-        if (!(verdict == null || verdict.equals(Paper.FinalVerdictEnum.UNRESOLVED))) {
+        if (paper.getFinalVerdict() != null) {
             return true;
         }
 
@@ -55,7 +54,7 @@ public class PaperEvaluation {
 
         // If reviews are mixed it remains unresolved. The pc chair wil have to manually resolve it.
         } else {
-            paper.finalVerdict(Paper.FinalVerdictEnum.UNRESOLVED);
+            paper.finalVerdict(null);
         }
         return paperRepository.save(paper).equals(paper);
     }
