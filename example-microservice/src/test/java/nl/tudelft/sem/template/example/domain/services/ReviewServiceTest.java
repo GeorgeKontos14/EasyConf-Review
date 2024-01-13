@@ -1,6 +1,7 @@
 package nl.tudelft.sem.template.example.domain.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
@@ -14,10 +15,15 @@ import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 public class ReviewServiceTest {
+    private RestTemplate restTemplate;
     private ReviewService sut;
     private ReviewRepository repo;
     private PcChairRepository pcChairRepository;
@@ -32,6 +38,7 @@ public class ReviewServiceTest {
      */
     @BeforeEach
     public void setup() {
+        restTemplate = Mockito.mock(RestTemplate.class);
         repo = Mockito.mock(ReviewRepository.class);
         pcChairRepository = Mockito.mock(PcChairRepository.class);
         reviewerRepository = Mockito.mock(ReviewerRepository.class);
@@ -230,6 +237,36 @@ public class ReviewServiceTest {
         Mockito.when(repo.findReviewByReviewerId(5))
                 .thenReturn(List.of(r));
         assertThat(sut.findAllPapersByReviewerId(5)).isEqualTo(List.of(1));
+    }
+
+    /**
+     * Test for the functionality of the getTrackDeadline method.
+     */
+    @Test
+    public void getTrackDeadlineOkTest() {
+        Mockito.when(restTemplate
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.of(Optional.of("2024-10-10")));
+        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isEqualTo("2024-10-17");
+    }
+
+    /**
+     * Test that makes the getTrackDeadline method throw an exception.
+     */
+    @Test
+    public void getTrackDeadlineExceptionTest() {
+        Mockito.when(restTemplate
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(IllegalArgumentException.class);
+        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        assertThat(result.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void advanceOneWeekTest() {
+        assertThat(sut.advanceOneWeek("2024-12-31")).isEqualTo("2025-01-07");
     }
 
     @Test

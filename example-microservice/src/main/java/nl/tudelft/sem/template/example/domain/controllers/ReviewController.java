@@ -3,10 +3,8 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import nl.tudelft.sem.template.api.ReviewApi;
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.models.TrackPhase;
+import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -14,6 +12,7 @@ import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -27,12 +26,28 @@ public class ReviewController implements ReviewApi {
     private final ReviewService reviewService;
     private final ReviewerPreferencesService reviewerPreferencesService;
     private final PaperService paperService;
+    private final TrackPhaseService trackPhaseService;
 
-    public ReviewController(UserService userService, ReviewService reviewService, ReviewerPreferencesService reviewerPreferencesService, PaperService paperService) {
+    public ReviewController(UserService userService, ReviewService reviewService, ReviewerPreferencesService reviewerPreferencesService, PaperService paperService,
+                            TrackPhaseService trackPhaseService) {
         this.userService = userService;
         this.reviewService = reviewService;
         this.reviewerPreferencesService = reviewerPreferencesService;
         this.paperService = paperService;
+        this.trackPhaseService = trackPhaseService;
+    }
+
+    @Override
+    public ResponseEntity<Void> reviewStartBiddingForTrackGet(Integer trackID) {
+        if (trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        Optional<List<Integer>> papersOpt = trackPhaseService
+                .getTrackPapers(trackID, new RestTemplate());
+        if (papersOpt.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        TrackPhase phase = new TrackPhase(papersOpt.get());
+        trackPhaseService.saveTrackPhase(phase);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
 
@@ -168,10 +183,20 @@ public class ReviewController implements ReviewApi {
     }
 
     public ResponseEntity<Review> reviewEditOverallScorePut(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID,
             @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
     ) {
         return reviewEditConfidenceScorePut(userID, review);
+    }
+
+    @Override
+    public ResponseEntity<String> reviewGetBiddingDeadlineGet(Integer trackID, Integer userID) {
+        if (userID == null || userID < 0 || trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Optional<String> deadline = reviewService.getTrackDeadline(trackID, new RestTemplate());
+        return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     /**
