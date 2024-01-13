@@ -4,10 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -17,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +26,7 @@ public class ReviewControllerTest {
     private ReviewService reviewService;
     private PaperService paperService;
     private ReviewerPreferencesService reviewerPreferencesService;
+    private TrackPhaseService trackPhaseService;
     private ReviewController sut;
 
     /**
@@ -70,9 +69,17 @@ public class ReviewControllerTest {
         reviewService = Mockito.mock(ReviewService.class);
         paperService = Mockito.mock(PaperService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
-        sut = new ReviewController(userService, reviewService, reviewerPreferencesService, paperService);
+        trackPhaseService = Mockito.mock(TrackPhaseService.class);
+        sut = new ReviewController(userService, reviewService, reviewerPreferencesService,
+                paperService, trackPhaseService);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        Mockito.when(trackPhaseService.getTrackPapers(1, new RestTemplate()))
+                .thenReturn(Optional.of(list));
+        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
     }
 
     /**
@@ -310,7 +317,7 @@ public class ReviewControllerTest {
     void postReviewTest() {
         Comment c = new Comment();
         Mockito.when(reviewService.reviewPostCommentPost(c)).thenReturn(c);
-        assertThat(sut.reviewPostCommentPost(1, c)).isEqualTo(new ResponseEntity<Comment>(c, HttpStatus.OK));
+        assertThat(sut.reviewPostCommentPost(1, c)).isEqualTo(new ResponseEntity<>(c, HttpStatus.OK));
     }
 
 
@@ -342,5 +349,19 @@ public class ReviewControllerTest {
                 .reviewFindAllPreferencesByUserIdGet(1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
+    }
+
+    @Test
+    public void startBiddingForTrackBadRequestTest() {
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewStartBiddingForTrackGet(-1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void startBiddingForTrackNotFoundTest() {
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }
