@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -168,10 +169,20 @@ public class ReviewController implements ReviewApi {
     }
 
     public ResponseEntity<Review> reviewEditOverallScorePut(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID", required = true) Integer userID,
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID,
             @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
     ) {
         return reviewEditConfidenceScorePut(userID, review);
+    }
+
+    @Override
+    public ResponseEntity<String> reviewGetBiddingDeadlineGet(Integer trackID, Integer userID) {
+        if (userID == null || userID < 0 || trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Optional<String> deadline = reviewService.getTrackDeadline(trackID, new RestTemplate());
+        return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     /**
