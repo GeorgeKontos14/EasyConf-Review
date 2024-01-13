@@ -222,5 +222,9 @@ public class ReviewService {
         LocalDate advanced = currentDateObject.plusWeeks(1);
         return advanced.toString();
     }
+
+    public List<Review> findAllReviewsByPaperId(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
+    }
 }
 

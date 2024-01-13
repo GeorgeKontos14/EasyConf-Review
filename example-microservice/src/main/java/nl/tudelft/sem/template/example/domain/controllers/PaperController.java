@@ -44,6 +44,29 @@ public class PaperController implements PaperApi {
         this.reviewService = reviewService;
     }
 
+    /**
+     * GET /paper/getPaperReviews : Gets the reviews for a paper
+     * For a given paper ID, returns the list of 3 reviews associated to that paper
+     *
+     * @param paperId the id of the paper (required)
+     * @param userID  The ID of the user, used for authorization (required)
+     * @return Successful response (status code 200)
+     * or Invalid Paper ID (status code 400)
+     * or Unauthorized (status code 401)
+     * or Not found (status code 404)
+     * or Server error (status code 500)
+     */
+    @Override
+    public ResponseEntity<List<Review>> paperGetPaperReviewsGet(Integer paperId, Integer userID) {
+        if (paperId == null || paperId < 0 || userID == null || userID < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (!userService.validateUser(userID)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(reviewService.findAllReviewsByPaperId(paperId), HttpStatus.OK);
+    }
+
     @Override
     public ResponseEntity<List<Paper>> paperGetPaperByIDGet(
             @NotNull @Parameter(name = "PaperId", description = "The id for which the paper should be reviewed.",

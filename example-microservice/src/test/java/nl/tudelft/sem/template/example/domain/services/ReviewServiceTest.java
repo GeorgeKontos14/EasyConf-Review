@@ -269,4 +269,10 @@ public class ReviewServiceTest {
         assertThat(sut.advanceOneWeek("2024-12-31")).isEqualTo("2025-01-07");
     }
 
+    @Test
+    public void findAllReviewsByPaperId() {
+        Mockito.when(repo.findReviewsByPaperId(1))
+                .thenReturn(List.of(new Review()));
+        assertThat(sut.findAllReviewsByPaperId(1)).isEqualTo(List.of(new Review()));
+    }
 }
