@@ -3,10 +3,7 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -28,6 +25,7 @@ public class ReviewControllerTest {
     private ReviewService reviewService;
     private PaperService paperService;
     private ReviewerPreferencesService reviewerPreferencesService;
+    private TrackPhaseService trackPhaseService;
     private ReviewController sut;
 
     /**
@@ -70,7 +68,9 @@ public class ReviewControllerTest {
         reviewService = Mockito.mock(ReviewService.class);
         paperService = Mockito.mock(PaperService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
-        sut = new ReviewController(userService, reviewService, reviewerPreferencesService, paperService);
+        trackPhaseService = Mockito.mock(TrackPhaseService.class);
+        sut = new ReviewController(userService, reviewService, reviewerPreferencesService,
+                paperService, trackPhaseService);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
     }
@@ -345,6 +345,14 @@ public class ReviewControllerTest {
     }
 
     @Test
+    public void startBiddingForTrackBadRequestTest() {
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewStartBiddingForTrackGet(-1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     public void getBiddingDeadlineBadRequestTest() {
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(null, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -354,6 +362,22 @@ public class ReviewControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut.reviewGetBiddingDeadlineGet(1, -1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void startBiddingForTrackNotFoundTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void startBiddingDeadlineOkTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(anyInt(), any(RestTemplate.class)))
+                .thenReturn(Optional.of(Arrays.asList(1,2,3)));
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 
     @Test
@@ -372,8 +396,10 @@ public class ReviewControllerTest {
 
     @Test
     public void getBiddingDeadlineOkTest() {
-        Mockito.when(reviewService.getTrackDeadline(1, new RestTemplate()))
-                .thenReturn(Optional.of("12-12-2024"));
-
+        Optional<String> opt = Optional.of("2024-12-12");
+        Mockito.when(reviewService.getTrackDeadline(anyInt(), any(RestTemplate.class)))
+                .thenReturn(opt);
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 }
