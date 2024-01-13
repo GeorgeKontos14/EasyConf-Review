@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 
 import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.model.Comment;
@@ -360,8 +359,40 @@ public class ReviewControllerTest {
     }
 
     @Test
+    public void getBiddingDeadlineBadRequestTest() {
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(null, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(-1, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(1, null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(1, -1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     public void startBiddingForTrackNotFoundTest() {
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void getBiddingDeadlineUnauthorizedTest() {
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1, 2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void getBiddingDeadlineNotFoundTest() {
+        Mockito.when(reviewService.getTrackDeadline(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(2,1);
+        assertThat(response.getStatusCode()).isEqualTo((HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    public void getBiddingDeadlineOkTest() {
+        Mockito.when(reviewService.getTrackDeadline(1, new RestTemplate()))
+                .thenReturn(Optional.of("12-12-2024"));
     }
 }

@@ -8,11 +8,16 @@ import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+
+import org.springframework.http.*;
+
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ReviewService {
@@ -183,6 +188,43 @@ public class ReviewService {
                 .stream()
                 .map(Review::getPaperId)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Method that gets the track deadline from the users' microservice.
+     * @param trackID the ID of the track.
+     * @param restTemplate the rest template.
+     * @return an optional containing the deadline; if any.
+     */
+    public Optional<String> getTrackDeadline(int trackID, RestTemplate restTemplate) {
+        String submissionsUri = "localhost:8082" + trackID + "/deadline";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.exchange(submissionsUri, HttpMethod.GET, entity, String.class);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+        String submissionDeadline = response.getBody();
+        return Optional.of(advanceOneWeek(submissionDeadline));
+    }
+
+    /**
+     * Method that advances the date by one week.
+     * @param currentDate the current date.
+     * @return the new date
+     */
+    public String advanceOneWeek(String currentDate) {
+        LocalDate currentDateObject = LocalDate.parse(currentDate);
+        LocalDate advanced = currentDateObject.plusWeeks(1);
+        return advanced.toString();
+    }
+
+    public List<Review> findAllReviewsByPaperId(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
     }
 }
 

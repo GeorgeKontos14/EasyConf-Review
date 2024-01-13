@@ -189,6 +189,16 @@ public class ReviewController implements ReviewApi {
         return reviewEditConfidenceScorePut(userID, review);
     }
 
+    @Override
+    public ResponseEntity<String> reviewGetBiddingDeadlineGet(Integer trackID, Integer userID) {
+        if (userID == null || userID < 0 || trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Optional<String> deadline = reviewService.getTrackDeadline(trackID, new RestTemplate());
+        return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
     /**
      * POST /review/postComment : Post a comment on a review
      * post a comment on a review
