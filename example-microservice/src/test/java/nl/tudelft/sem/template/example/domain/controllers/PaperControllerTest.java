@@ -17,6 +17,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesServic
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -302,5 +303,30 @@ public class PaperControllerTest {
                 .thenReturn(List.of(p));
         assertThat(paperController.paperGetAllPapersForIDGet(1))
                 .isEqualTo(new ResponseEntity<>(List.of(p), HttpStatus.OK));
+    }
+
+    @Test
+    void paperGetPaperReviewsGetFailTest() {
+        ResponseEntity<List<Review>> badRequest = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(paperController.paperGetPaperReviewsGet(1,null))
+                .isEqualTo(badRequest);
+        assertThat(paperController.paperGetPaperReviewsGet(null,1))
+                .isEqualTo(badRequest);
+        assertThat(paperController.paperGetPaperReviewsGet(1,-1))
+                .isEqualTo(badRequest);
+        assertThat(paperController.paperGetPaperReviewsGet(-1,1))
+                .isEqualTo(badRequest);
+        Mockito.when(userService.validateUser(3)).thenReturn(false);
+        assertThat(paperController.paperGetPaperReviewsGet(1, 3))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void paperGetPaperReviewsGetTest() {
+        Mockito.when(userService.validateUser(3)).thenReturn(true);
+        Mockito.when(reviewService.findAllReviewsByPaperId(1)).thenReturn(List.of(new Review()));
+        assertThat(paperController.paperGetPaperReviewsGet(1, 3))
+                .isEqualTo(new ResponseEntity<>(List.of(new Review()), HttpStatus.OK));
+
     }
 }

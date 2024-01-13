@@ -184,5 +184,9 @@ public class ReviewService {
                 .map(Review::getPaperId)
                 .collect(Collectors.toList());
     }
+
+    public List<Review> findAllReviewsByPaperId(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
+    }
 }
 
