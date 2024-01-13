@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.repositories.TrackPhaseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,13 @@ public class TrackPhaseServiceTest {
         Optional<List<Integer>> result = sut.getTrackPapers(1, restTemplate);
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get()).isEqualTo(Arrays.asList(1,2,34));
+    }
+
+    @Test
+    public void saveTrackPhaseTest() {
+        TrackPhase phase = new TrackPhase(Arrays.asList(1,2));
+        sut.saveTrackPhase(phase);
+        Mockito.verify(trackPhaseRepository).save(any(TrackPhase.class));
     }
 
 }

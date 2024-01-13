@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
-import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
@@ -21,7 +20,6 @@ import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +70,7 @@ public class PaperControllerTest {
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
         reviewService = Mockito.mock(ReviewService.class);
         paperController = new PaperController(userService, paperService, reviewerPreferencesService, reviewService);
+        NullChecks nullChecks = new NullChecks();
     }
 
     @Test
@@ -167,26 +166,65 @@ public class PaperControllerTest {
     }
 
     @Test
+    public void getTitleAndAbstractBadRequestTest() {
+        ResponseEntity<String> response = paperController
+                .paperGetTitleAndAbstractGet(null, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void getTitleAndAbstractUnauthorizedTest() {
+        Mockito.when(userService.validateUser(2)).thenReturn(false);
+        ResponseEntity<String> response = paperController
+                .paperGetTitleAndAbstractGet(1,2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void getTitleAndAbstractExceptionTest() {
+        RuntimeException e = Mockito.mock(RuntimeException.class);
+        Mockito.when(userService.validateUser(1)).thenReturn(true);
+        Mockito.when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class)))
+                .thenThrow(e);
+        ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        Mockito.verify(e).printStackTrace();
+    }
+
+
+    @Test
     void paperGetPaperCommentsGetInvalidTest() {
         ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        assertThat(paperController.paperGetPaperCommentsGet(null, 1)).isEqualTo(response);
-        assertThat(paperController.paperGetPaperCommentsGet(1, null)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(null, 3)).isEqualTo(response);
+        assertThat(paperController.paperGetPaperCommentsGet(3, null)).isEqualTo(response);
         assertThat(paperController.paperGetPaperCommentsGet(-1, 1)).isEqualTo(response);
-
+        assertThat(paperController.paperGetPaperCommentsGet(1, -1)).isEqualTo(response);
         assertThat(paperController.paperGetPaperCommentsGet(1, -1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        Mockito.when(userService.validateUser(2)).thenReturn(false);
+        assertThat(paperController.paperGetPaperCommentsGet(3,2).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
     void getPaperCommentTest() {
         Paper p = new Paper();
         p.id(1);
+        Mockito.when(userService.validateUser(3)).thenReturn(true);
         Mockito.when(paperService.getPaperObjectWithId(2)).thenReturn(Optional.of(p));
-        paperController.paperGetPaperByIDGet(2, 1);
+        paperController.paperGetPaperByIDGet(2, 3);
         Mockito.when(paperService.getPaperObjectWithId(0)).thenReturn(Optional.empty());
-        Mockito.when(userService.validateUser(1)).thenReturn(true);
-        ResponseEntity<List<Comment>> response = paperController.paperGetPaperCommentsGet(0,1);
+        Mockito.when(userService.validateUser(0)).thenReturn(true);
+        ResponseEntity<List<Comment>> response = paperController.paperGetPaperCommentsGet(0,0);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Comment c1 = new Comment();
+        c1.id(1);
+        Comment c2 = new Comment();
+        c2.id(2);
+        Mockito.when(paperService.paperGetPaperCommentsGet(3)).thenReturn(Arrays.asList(c1,c2));
+        response = paperController.paperGetPaperCommentsGet(3,0);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(Arrays.asList(c1,c2));
     }
 
     @Test
@@ -231,18 +269,22 @@ public class PaperControllerTest {
     @Test
     void paperUpdatePaperStatusPutTest() {
         Mockito.when(paperService.isExistingPaper(5)).thenReturn(true);
+        Mockito.when(paperService.isExistingPaper(6)).thenReturn(true);
         Mockito.when(paperService.paperUpdatePaperStatusPut(5, null)).thenReturn(true);
         Mockito.when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.ACCEPTED))
                 .thenReturn(true);
         Mockito.when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.REJECTED))
                 .thenReturn(true);
-
+        Mockito.when(paperService.paperUpdatePaperStatusPut(6, Paper.FinalVerdictEnum.REJECTED))
+                .thenReturn(false);
         assertThat(paperController.paperUpdatePaperStatusPut(5, "Unresolved", 1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
         assertThat(paperController.paperUpdatePaperStatusPut(5, "Accepted", 1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
         assertThat(paperController.paperUpdatePaperStatusPut(5, "Rejected", 1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
+        assertThat(paperController.paperUpdatePaperStatusPut(6, "Rejected",1).getStatusCode())
+                .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test

@@ -23,7 +23,6 @@ import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -58,7 +57,7 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Review>> paperGetPaperReviewsGet(Integer paperId, Integer userID) {
-        if (paperId == null || paperId < 0 || userID == null || userID < 0) {
+        if (NullChecks.nullCheck(paperId, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!userService.validateUser(userID)) {
@@ -76,7 +75,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userId") Integer userId
     ) {
-        if (userId == null || paperId == null || paperId < 0 || userId < 0) {
+        if (NullChecks.nullCheck(paperId, userId)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
@@ -113,7 +112,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || paperID == null || paperID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!userService.validateUser(userID)) {
@@ -141,7 +140,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || paperID == null || paperID < 0 || userID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
@@ -186,7 +185,7 @@ public class PaperController implements PaperApi {
     public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
             "The ID of the paper we want to see the reviewer preferences for", required = true,
             in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
-        if (reviewerId == null || reviewerId < 0)
+        if (NullChecks.nullCheck(reviewerId))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         if (!userService.validateUser(reviewerId)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -204,7 +203,7 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to see the reviewer preferences for", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+        if (NullChecks.nullCheck(paperID, userID))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         boolean isUserValid = userService.validateUser(userID);
         if (!isUserValid)
@@ -234,7 +233,7 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (paperID == null || userID == null || paperID < 0 || userID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (status == null) {
