@@ -73,12 +73,6 @@ public class ReviewControllerTest {
                 paperService, trackPhaseService);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        Mockito.when(trackPhaseService.getTrackPapers(1, new RestTemplate()))
-                .thenReturn(Optional.of(list));
-        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
-                .thenReturn(Optional.empty());
     }
 
     /**
@@ -372,8 +366,18 @@ public class ReviewControllerTest {
 
     @Test
     public void startBiddingForTrackNotFoundTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void startBiddingDeadlineOkTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(anyInt(), any(RestTemplate.class)))
+                .thenReturn(Optional.of(Arrays.asList(1,2,3)));
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 
     @Test
@@ -392,7 +396,10 @@ public class ReviewControllerTest {
 
     @Test
     public void getBiddingDeadlineOkTest() {
-        Mockito.when(reviewService.getTrackDeadline(1, new RestTemplate()))
-                .thenReturn(Optional.of("12-12-2024"));
+        Optional<String> opt = Optional.of("2024-12-12");
+        Mockito.when(reviewService.getTrackDeadline(anyInt(), any(RestTemplate.class)))
+                .thenReturn(opt);
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 }
