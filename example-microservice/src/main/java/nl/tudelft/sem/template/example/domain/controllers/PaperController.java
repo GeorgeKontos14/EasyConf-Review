@@ -17,6 +17,7 @@ import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.util.NullChecks;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
@@ -130,8 +131,8 @@ public class PaperController implements PaperApi {
     /**
      * endpoint for getting title and abstract.
      *
-     * @param paperID The ID of the paper we want to view the title and abstract (required)
-     * @param userID The ID of the user, used for authorization (required)
+     * @param paperId The ID of the paper we want to view the title and abstract (required)
+     * @param userId The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
     @Override

@@ -409,6 +409,7 @@ public class ReviewControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+
     @Test
     public void getBiddingDeadlineNotFoundTest() {
         Mockito.when(reviewService.getTrackDeadline(2, new RestTemplate()))
@@ -425,4 +426,5 @@ public class ReviewControllerTest {
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
+
 }

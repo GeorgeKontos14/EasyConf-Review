@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
+import nl.tudelft.sem.template.example.domain.util.ReviewUtils;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -71,167 +71,6 @@ public class ReviewServiceTest {
         papers = Arrays.asList(p1, p2, p3, p4, p5);
         prefs = new ArrayList<>();
         conflicts = new HashMap<>();
-    }
-
-    /**
-     * Tests if the intersect method returns
-     * false when the lists have no common elements.
-     */
-    @Test
-    public void intersectNoneTest() {
-        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6);
-        List<Integer> b = Arrays.asList(7, 8, 9, 33, 55, 66);
-        assertThat(sut.intersect(a, b)).isFalse();
-    }
-
-    /**
-     * Tests if the intersect method returns
-     * true when the lists have one common element.
-     */
-    @Test
-    public void intersectSingleElementTest() {
-        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5);
-        List<Integer> b = Arrays.asList(5, 6, 7, 82);
-        assertThat(sut.intersect(a, b)).isTrue();
-    }
-
-    /**
-     * Tests if the intersect method returns
-     * true when the lists have multiple common elements.
-     */
-    @Test
-    public void intersectMultipleElementsTest() {
-        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6, 82);
-        List<Integer> b = Arrays.asList(5, 6, 7, 82);
-        assertThat(sut.intersect(a, b)).isTrue();
-        assertThat(sut.intersect(b, a)).isTrue();
-    }
-
-    /**
-     * Checks if all papers are assigned to three reviews
-     * in the case where no paper has too many conflicts
-     * or too many cannot review.
-     */
-    @Test
-    public void directAssignmentTest() {
-        for (int i = 1; i <= 5; i++) {
-            for (int j = 1; j <= 10; j++) {
-                ReviewerPreferences pr = new ReviewerPreferences();
-                pr.setReviewerId(j);
-                pr.setPaperId(i);
-                if (i == 4) {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.NEUTRAL);
-                } else {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CAN_REVIEW);
-                }
-                prefs.add(pr);
-            }
-        }
-        for (int j = 1; j <= 10; j++) {
-            conflicts.put(j, Collections.emptyList());
-        }
-        List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
-        assertThat(assignments.size()).isEqualTo(15);
-        sut.saveReviews(assignments);
-        Mockito.verify(repo).saveAll(assignments);
-    }
-
-    /**
-     * Checks if all papers are assigned to three reviews
-     * in the case that a paper has too many cannot review.
-     */
-    @Test
-    public void paperWithOnlyCannotReviewTest() {
-        for (int i = 1; i <= 5; i++) {
-            for (int j = 1; j <= 10; j++) {
-                ReviewerPreferences pr = new ReviewerPreferences();
-                pr.setReviewerId(j);
-                pr.setPaperId(i);
-                if (i == 4) {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                } else {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CAN_REVIEW);
-                }
-                prefs.add(pr);
-            }
-        }
-        for (int j = 1; j <= 10; j++) {
-            conflicts.put(j, Collections.emptyList());
-        }
-        List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
-        assertThat(assignments.size()).isEqualTo(15);
-        sut.saveReviews(assignments);
-    }
-
-    /**
-     * Checks if all papers are assigned to three reviews
-     * in the case that a paper has too many conflicts.
-     */
-    @Test
-    public void paperWithConflictsTest() {
-        for (int i = 1; i <= 5; i++) {
-            for (int j = 1; j <= 10; j++) {
-                ReviewerPreferences pr = new ReviewerPreferences();
-                pr.setReviewerId(j);
-                pr.setPaperId(i);
-                if (i == 4) {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                } else {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CAN_REVIEW);
-                }
-                prefs.add(pr);
-            }
-        }
-        for (int j = 1; j <= 10; j++) {
-            conflicts.put(j, Collections.singletonList(6));
-        }
-        List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
-        assertThat(assignments.size()).isEqualTo(15);
-        sut.saveReviews(assignments);
-    }
-
-    /**
-     * Checks if all papers are assigned to three reviews
-     * in the case that a paper has both too many conflicts
-     * and too many cannot review.
-     */
-    @Test
-    public void paperWithBothProblemsTest() {
-        for (int i = 1; i <= 5; i++) {
-            for (int j = 1; j <= 10; j++) {
-                ReviewerPreferences pr = new ReviewerPreferences();
-                pr.setReviewerId(j);
-                pr.setPaperId(i);
-                if (i == 4) {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                } else {
-                    pr.setReviewerPreference(ReviewerPreferences
-                            .ReviewerPreferenceEnum.CAN_REVIEW);
-                }
-                prefs.add(pr);
-            }
-        }
-        for (int j = 1; j <= 10; j++) {
-            conflicts.put(j, Collections.singletonList(11));
-        }
-        List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
-        assertThat(assignments.size()).isEqualTo(15);
-        sut.saveReviews(assignments);
-    }
-
-    @Test
-    public void createReviewTest() {
-        Review r = new Review();
-        r.paperId(1);
-        r.reviewerId(2);
-        assertThat(sut.createReview(1, 2)).isEqualTo(r);
     }
 
     /**
@@ -291,11 +130,6 @@ public class ReviewServiceTest {
     }
 
     @Test
-    public void advanceOneWeekTest() {
-        assertThat(sut.advanceOneWeek("2024-12-31")).isEqualTo("2025-01-07");
-    }
-
-    @Test
     public void findAllReviewsByPaperId() {
         Mockito.when(repo.findReviewsByPaperId(1))
                 .thenReturn(List.of(new Review()));
@@ -304,23 +138,23 @@ public class ReviewServiceTest {
 
     @Test
     public void reviewsByReviewerTest() {
-        Review r1 = sut.createReview(1, 1);
-        Review r2 = sut.createReview(2, 2);
+        Review r1 = ReviewUtils.createReview(1, 1);
+        Review r2 = ReviewUtils.createReview(2, 2);
         Mockito.when(repo.findReviewByReviewerId(1)).thenReturn(Arrays.asList(r1, r2));
         assertThat(sut.reviewsByReviewer(1)).isEqualTo(Arrays.asList(r1, r2));
     }
 
     @Test
     public void reviewsByPaperTest() {
-        Review r1 = sut.createReview(1, 1);
-        Review r2 = sut.createReview(2, 2);
+        Review r1 = ReviewUtils.createReview(1, 1);
+        Review r2 = ReviewUtils.createReview(2, 2);
         Mockito.when(repo.findReviewsByPaperId(1)).thenReturn(Arrays.asList(r1, r2));
         assertThat(sut.reviewsByPaper(1)).isEqualTo(Arrays.asList(r1, r2));
     }
 
     @Test
     public void findReviewObjectTest() {
-        Review r = sut.createReview(1, 1);
+        Review r = ReviewUtils.createReview(1, 1);
         Mockito.when(repo.findById(1)).thenReturn(Optional.of(r));
         assertThat(sut.findReviewObjectWithId(1)).isEqualTo(Optional.of(r));
     }
@@ -335,7 +169,7 @@ public class ReviewServiceTest {
 
     @Test
     public void saveAndReturnReviewTest() {
-        Review r = sut.createReview(1, 1);
+        Review r = ReviewUtils.createReview(1, 1);
         Mockito.when(repo.save(r)).thenReturn(r);
         assertThat(sut.saveAndReturnReview(r)).isEqualTo(r);
         Mockito.verify(repo).save(r);

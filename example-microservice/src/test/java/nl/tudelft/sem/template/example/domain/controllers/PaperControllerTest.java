@@ -17,20 +17,17 @@ import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.util.NullChecks;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.web.client.RestTemplate;
-
-import javax.swing.text.html.parser.Entity;
 
 
 public class PaperControllerTest {
@@ -333,7 +330,7 @@ public class PaperControllerTest {
 
         when(userService.validateUser(anyInt())).thenReturn(true);
         when(reviewService.findAllPapersByReviewerId(2))
-                        .thenReturn(List.of(5));
+                .thenReturn(List.of(5));
         when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(null);
         assertThat(paperController.paperGetAllPapersForIDGet(2))
@@ -355,7 +352,7 @@ public class PaperControllerTest {
         Paper p = new Paper();
         p.id(5);
         when(reviewService.findAllPapersByReviewerId(1))
-                        .thenReturn(List.of(5));
+                .thenReturn(List.of(5));
         when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(List.of(p));
         assertThat(paperController.paperGetAllPapersForIDGet(1))
