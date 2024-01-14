@@ -13,20 +13,25 @@ import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+import org.h2.engine.User;
 import org.springframework.http.*;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
 @Service
 public class PaperService {
-
+    private final transient UserService userService;
+    private final transient ReviewService reviewService;
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
 
-    public PaperService(PaperRepository paperRepository, CommentRepository commentRepository) {
+    public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository, CommentRepository commentRepository) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
+        this.userService = userService;
+        this.reviewService = reviewService;
     }
 
     /**
@@ -89,6 +94,31 @@ public class PaperService {
 
     public List<Paper> findAllPapersForIdList(List<Integer> paperIds) {
         return paperRepository.findAllById(paperIds);
+    }
+
+
+    /**
+     * returns a List of Papers including only the id and the final decision,
+     * each of them having been reviewed by the provided reviewer.
+     *
+     * @param reviewerId - the id of the reviewer
+     * @return List of Paper objects
+     */
+    public List<Paper> getFinalDecisionsOfPapersForReviewer(int reviewerId) {
+        if(!userService.validateUser(reviewerId))
+            return List.of();
+        List<Integer> allPaperIdsForReviewer = reviewService.findAllPapersByReviewerId(reviewerId);
+        List<Paper> papersForReviewer = new ArrayList<>();
+        for(Integer paperId : allPaperIdsForReviewer){
+            Optional<Paper> retrieved = paperRepository.findById(paperId);
+            if(retrieved.isEmpty())
+                continue;
+            Paper abstracted = new Paper();
+            abstracted.setId(paperId);
+            abstracted.setFinalVerdict(retrieved.get().getFinalVerdict());
+            papersForReviewer.add(abstracted);
+        }
+        return papersForReviewer;
     }
 
 }
