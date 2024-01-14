@@ -1,9 +1,9 @@
 package nl.tudelft.sem.template.example.domain.models;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import org.junit.jupiter.api.Test;
 
 public class TrackPhaseTest {
     private TrackPhase sut;
@@ -25,7 +25,7 @@ public class TrackPhaseTest {
     }
 
     /**
-     * Test for the next phase method
+     * Test for the next phase method.
      */
     @Test
     public void nextPhaseTest() {

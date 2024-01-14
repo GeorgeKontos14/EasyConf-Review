@@ -1,5 +1,11 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairReviewCommentRepository;
 import nl.tudelft.sem.template.model.Comment;
@@ -8,9 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class CommentServiceTest {
 
@@ -19,8 +22,7 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
 
     @BeforeEach
-    void setup()
-    {
+    void setup() {
         pcChairReviewCommentRepository = Mockito.mock(PcChairReviewCommentRepository.class);
         commentRepository = Mockito.mock(CommentRepository.class);
         commentService = new CommentService(commentRepository, pcChairReviewCommentRepository);

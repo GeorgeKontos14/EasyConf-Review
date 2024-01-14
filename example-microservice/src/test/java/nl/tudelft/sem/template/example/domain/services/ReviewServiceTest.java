@@ -1,5 +1,17 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
@@ -17,10 +29,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
 
 public class ReviewServiceTest {
     private RestTemplate restTemplate;
@@ -46,20 +55,20 @@ public class ReviewServiceTest {
         sut = new ReviewService(repo, pcChairRepository, commentRepository);
         Paper p1 = new Paper();
         p1.setId(1);
-        p1.setAuthors(Arrays.asList(1,2,3,4));
+        p1.setAuthors(Arrays.asList(1, 2, 3, 4));
         Paper p2 = new Paper();
         p2.setId(2);
-        p2.setAuthors(Arrays.asList(4,5,6));
+        p2.setAuthors(Arrays.asList(4, 5, 6));
         Paper p3 = new Paper();
         p3.setId(3);
-        p3.setAuthors(Arrays.asList(7,8,9,10));
+        p3.setAuthors(Arrays.asList(7, 8, 9, 10));
         Paper p4 = new Paper();
         p4.setId(4);
-        p4.setAuthors(Arrays.asList(11,12));
+        p4.setAuthors(Arrays.asList(11, 12));
         Paper p5 = new Paper();
         p5.setId(5);
-        p5.setAuthors(Arrays.asList(13,14,5,15));
-        papers = Arrays.asList(p1,p2,p3,p4,p5);
+        p5.setAuthors(Arrays.asList(13, 14, 5, 15));
+        papers = Arrays.asList(p1, p2, p3, p4, p5);
         prefs = new ArrayList<>();
         conflicts = new HashMap<>();
     }
@@ -70,9 +79,9 @@ public class ReviewServiceTest {
      */
     @Test
     public void intersectNoneTest() {
-        List<Integer> a = Arrays.asList(1,2,3,4,5,6);
-        List<Integer> b = Arrays.asList(7,8,9,33,55,66);
-        assertThat(sut.intersect(a,b)).isFalse();
+        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6);
+        List<Integer> b = Arrays.asList(7, 8, 9, 33, 55, 66);
+        assertThat(sut.intersect(a, b)).isFalse();
     }
 
     /**
@@ -81,8 +90,8 @@ public class ReviewServiceTest {
      */
     @Test
     public void intersectSingleElementTest() {
-        List<Integer> a = Arrays.asList(1,2,3,4,5);
-        List<Integer> b = Arrays.asList(5,6,7,82);
+        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> b = Arrays.asList(5, 6, 7, 82);
         assertThat(sut.intersect(a, b)).isTrue();
     }
 
@@ -92,8 +101,8 @@ public class ReviewServiceTest {
      */
     @Test
     public void intersectMultipleElementsTest() {
-        List<Integer> a = Arrays.asList(1,2,3,4,5,6,82);
-        List<Integer> b = Arrays.asList(5,6,7,82);
+        List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6, 82);
+        List<Integer> b = Arrays.asList(5, 6, 7, 82);
         assertThat(sut.intersect(a, b)).isTrue();
         assertThat(sut.intersect(b, a)).isTrue();
     }
@@ -101,7 +110,7 @@ public class ReviewServiceTest {
     /**
      * Checks if all papers are assigned to three reviews
      * in the case where no paper has too many conflicts
-     * or too many cannot review
+     * or too many cannot review.
      */
     @Test
     public void directAssignmentTest() {
@@ -110,17 +119,19 @@ public class ReviewServiceTest {
                 ReviewerPreferences pr = new ReviewerPreferences();
                 pr.setReviewerId(j);
                 pr.setPaperId(i);
-                if (i==4)
+                if (i == 4) {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.NEUTRAL);
-                else
+                } else {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CAN_REVIEW);
+                }
                 prefs.add(pr);
             }
         }
-        for (int j = 1; j <= 10; j++)
+        for (int j = 1; j <= 10; j++) {
             conflicts.put(j, Collections.emptyList());
+        }
         List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
         assertThat(assignments.size()).isEqualTo(15);
         sut.saveReviews(assignments);
@@ -138,17 +149,19 @@ public class ReviewServiceTest {
                 ReviewerPreferences pr = new ReviewerPreferences();
                 pr.setReviewerId(j);
                 pr.setPaperId(i);
-                if (i==4)
+                if (i == 4) {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                else
+                } else {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CAN_REVIEW);
+                }
                 prefs.add(pr);
             }
         }
-        for (int j = 1; j <= 10; j++)
+        for (int j = 1; j <= 10; j++) {
             conflicts.put(j, Collections.emptyList());
+        }
         List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
         assertThat(assignments.size()).isEqualTo(15);
         sut.saveReviews(assignments);
@@ -165,17 +178,19 @@ public class ReviewServiceTest {
                 ReviewerPreferences pr = new ReviewerPreferences();
                 pr.setReviewerId(j);
                 pr.setPaperId(i);
-                if (i==4)
+                if (i == 4) {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                else
+                } else {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CAN_REVIEW);
+                }
                 prefs.add(pr);
             }
         }
-        for (int j = 1; j <= 10; j++)
+        for (int j = 1; j <= 10; j++) {
             conflicts.put(j, Collections.singletonList(6));
+        }
         List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
         assertThat(assignments.size()).isEqualTo(15);
         sut.saveReviews(assignments);
@@ -193,17 +208,19 @@ public class ReviewServiceTest {
                 ReviewerPreferences pr = new ReviewerPreferences();
                 pr.setReviewerId(j);
                 pr.setPaperId(i);
-                if (i==4)
+                if (i == 4) {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CANNOT_REVIEW);
-                else
+                } else {
                     pr.setReviewerPreference(ReviewerPreferences
                             .ReviewerPreferenceEnum.CAN_REVIEW);
+                }
                 prefs.add(pr);
             }
         }
-        for (int j = 1; j <= 10; j++)
+        for (int j = 1; j <= 10; j++) {
             conflicts.put(j, Collections.singletonList(11));
+        }
         List<Review> assignments = sut.assignReviewsAutomatically(papers, conflicts, prefs);
         assertThat(assignments.size()).isEqualTo(15);
         sut.saveReviews(assignments);
@@ -214,7 +231,7 @@ public class ReviewServiceTest {
         Review r = new Review();
         r.paperId(1);
         r.reviewerId(2);
-        assertThat(sut.createReview(1,2)).isEqualTo(r);
+        assertThat(sut.createReview(1, 2)).isEqualTo(r);
     }
 
     /**
@@ -222,7 +239,7 @@ public class ReviewServiceTest {
      */
     @Test
     public void verifyPcChairTest() {
-        PcChair chair = new PcChair(Arrays.asList(1,2,3));
+        PcChair chair = new PcChair(Arrays.asList(1, 2, 3));
         chair.setId(1);
         Mockito.when(pcChairRepository.findById(1)).thenReturn(Optional.of(chair));
         Mockito.when(pcChairRepository.findById(2)).thenReturn(Optional.empty());
@@ -254,7 +271,7 @@ public class ReviewServiceTest {
     @Test
     public void getTrackDeadlineOkTest() {
         Mockito.when(restTemplate
-                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                        .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(ResponseEntity.of(Optional.of("2024-10-10")));
         Optional<String> result = sut.getTrackDeadline(2, restTemplate);
         assertThat(result.isPresent()).isTrue();
@@ -267,7 +284,7 @@ public class ReviewServiceTest {
     @Test
     public void getTrackDeadlineExceptionTest() {
         Mockito.when(restTemplate
-                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                        .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
                 .thenThrow(IllegalArgumentException.class);
         Optional<String> result = sut.getTrackDeadline(2, restTemplate);
         assertThat(result.isEmpty()).isTrue();
@@ -287,23 +304,23 @@ public class ReviewServiceTest {
 
     @Test
     public void reviewsByReviewerTest() {
-        Review r1 = sut.createReview(1,1);
-        Review r2 = sut.createReview(2,2);
-        Mockito.when(repo.findReviewByReviewerId(1)).thenReturn(Arrays.asList(r1,r2));
-        assertThat(sut.reviewsByReviewer(1)).isEqualTo(Arrays.asList(r1,r2));
+        Review r1 = sut.createReview(1, 1);
+        Review r2 = sut.createReview(2, 2);
+        Mockito.when(repo.findReviewByReviewerId(1)).thenReturn(Arrays.asList(r1, r2));
+        assertThat(sut.reviewsByReviewer(1)).isEqualTo(Arrays.asList(r1, r2));
     }
 
     @Test
     public void reviewsByPaperTest() {
-        Review r1 = sut.createReview(1,1);
-        Review r2 = sut.createReview(2,2);
-        Mockito.when(repo.findReviewsByPaperId(1)).thenReturn(Arrays.asList(r1,r2));
-        assertThat(sut.reviewsByPaper(1)).isEqualTo(Arrays.asList(r1,r2));
+        Review r1 = sut.createReview(1, 1);
+        Review r2 = sut.createReview(2, 2);
+        Mockito.when(repo.findReviewsByPaperId(1)).thenReturn(Arrays.asList(r1, r2));
+        assertThat(sut.reviewsByPaper(1)).isEqualTo(Arrays.asList(r1, r2));
     }
 
     @Test
     public void findReviewObjectTest() {
-        Review r = sut.createReview(1,1);
+        Review r = sut.createReview(1, 1);
         Mockito.when(repo.findById(1)).thenReturn(Optional.of(r));
         assertThat(sut.findReviewObjectWithId(1)).isEqualTo(Optional.of(r));
     }
@@ -318,7 +335,7 @@ public class ReviewServiceTest {
 
     @Test
     public void saveAndReturnReviewTest() {
-        Review r = sut.createReview(1,1);
+        Review r = sut.createReview(1, 1);
         Mockito.when(repo.save(r)).thenReturn(r);
         assertThat(sut.saveAndReturnReview(r)).isEqualTo(r);
         Mockito.verify(repo).save(r);

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -176,7 +175,7 @@ public class PaperControllerTest {
     public void getTitleAndAbstractUnauthorizedTest() {
         Mockito.when(userService.validateUser(2)).thenReturn(false);
         ResponseEntity<String> response = paperController
-                .paperGetTitleAndAbstractGet(1,2);
+                .paperGetTitleAndAbstractGet(1, 2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
@@ -186,7 +185,7 @@ public class PaperControllerTest {
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class)))
                 .thenThrow(e);
-        ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(1,1);
+        ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         Mockito.verify(e).printStackTrace();
     }
@@ -202,7 +201,7 @@ public class PaperControllerTest {
         assertThat(paperController.paperGetPaperCommentsGet(1, -1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         Mockito.when(userService.validateUser(2)).thenReturn(false);
-        assertThat(paperController.paperGetPaperCommentsGet(3,2).getStatusCode())
+        assertThat(paperController.paperGetPaperCommentsGet(3, 2).getStatusCode())
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
@@ -215,16 +214,16 @@ public class PaperControllerTest {
         paperController.paperGetPaperByIDGet(2, 3);
         Mockito.when(paperService.getPaperObjectWithId(0)).thenReturn(Optional.empty());
         Mockito.when(userService.validateUser(0)).thenReturn(true);
-        ResponseEntity<List<Comment>> response = paperController.paperGetPaperCommentsGet(0,0);
+        ResponseEntity<List<Comment>> response = paperController.paperGetPaperCommentsGet(0, 0);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Comment c1 = new Comment();
         c1.id(1);
         Comment c2 = new Comment();
         c2.id(2);
-        Mockito.when(paperService.paperGetPaperCommentsGet(3)).thenReturn(Arrays.asList(c1,c2));
-        response = paperController.paperGetPaperCommentsGet(3,0);
+        Mockito.when(paperService.paperGetPaperCommentsGet(3)).thenReturn(Arrays.asList(c1, c2));
+        response = paperController.paperGetPaperCommentsGet(3, 0);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(Arrays.asList(c1,c2));
+        assertThat(response.getBody()).isEqualTo(Arrays.asList(c1, c2));
     }
 
     @Test
@@ -283,7 +282,7 @@ public class PaperControllerTest {
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
         assertThat(paperController.paperUpdatePaperStatusPut(5, "Rejected", 1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
-        assertThat(paperController.paperUpdatePaperStatusPut(6, "Rejected",1).getStatusCode())
+        assertThat(paperController.paperUpdatePaperStatusPut(6, "Rejected", 1).getStatusCode())
                 .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -311,7 +310,7 @@ public class PaperControllerTest {
     }
 
     @Test
-    public void paperGetAllPapersForIDGetFailTest() {
+    public void paperGetAllPapersForIdGetFailTest() {
         ResponseEntity<List<Paper>> badRequest = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         assertThat(paperController.paperGetAllPapersForIDGet(null))
                 .isEqualTo(badRequest);
@@ -340,7 +339,7 @@ public class PaperControllerTest {
     }
 
     @Test
-    public void paperGetAllPapersForIDGetTest() {
+    public void paperGetAllPapersForIdGetTest() {
         Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
 
         Paper p = new Paper();
@@ -356,13 +355,13 @@ public class PaperControllerTest {
     @Test
     void paperGetPaperReviewsGetFailTest() {
         ResponseEntity<List<Review>> badRequest = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        assertThat(paperController.paperGetPaperReviewsGet(1,null))
+        assertThat(paperController.paperGetPaperReviewsGet(1, null))
                 .isEqualTo(badRequest);
-        assertThat(paperController.paperGetPaperReviewsGet(null,1))
+        assertThat(paperController.paperGetPaperReviewsGet(null, 1))
                 .isEqualTo(badRequest);
-        assertThat(paperController.paperGetPaperReviewsGet(1,-1))
+        assertThat(paperController.paperGetPaperReviewsGet(1, -1))
                 .isEqualTo(badRequest);
-        assertThat(paperController.paperGetPaperReviewsGet(-1,1))
+        assertThat(paperController.paperGetPaperReviewsGet(-1, 1))
                 .isEqualTo(badRequest);
         Mockito.when(userService.validateUser(3)).thenReturn(false);
         assertThat(paperController.paperGetPaperReviewsGet(1, 3))
