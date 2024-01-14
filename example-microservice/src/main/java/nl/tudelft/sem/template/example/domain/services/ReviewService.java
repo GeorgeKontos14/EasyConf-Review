@@ -2,19 +2,31 @@ package nl.tudelft.sem.template.example.domain.services;
 
 import javassist.bytecode.LineNumberAttribute;
 import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+
+import org.springframework.http.*;
+
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ReviewService {
 
     private transient final ReviewRepository reviewRepository;
     private transient final PcChairRepository pcChairRepository;
+    private transient final ReviewerRepository reviewerRepository;
+    private transient final CommentRepository commentRepository;
 
 
     /**
@@ -22,9 +34,11 @@ public class ReviewService {
      * @param reviewRepository the repositories where reviews are meant to be stored.
      * @param pcChairRepository the repository containing pcChairs
      */
-    public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository) {
+    public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository, ReviewerRepository reviewerRepository, CommentRepository commentRepository) {
         this.reviewRepository = reviewRepository;
         this.pcChairRepository = pcChairRepository;
+        this.reviewerRepository = reviewerRepository;
+        this.commentRepository = commentRepository;
     }
 
     /**
@@ -157,8 +171,62 @@ public class ReviewService {
     }
 
 
-    public ReviewerPreferences saveReviewerPreference(ReviewerPreferences reviewerPreference) {
-        return null;
+    public boolean existsReview(int reviewId) {
+        return reviewRepository.existsById(reviewId);
+    }
+
+    public Review saveAndReturnReview(Review review) {
+        return reviewRepository.save(review);
+    }
+
+    public Comment reviewPostCommentPost(Comment comment) {
+        commentRepository.save(comment);
+        return comment;
+    }
+
+    public List<Integer> findAllPapersByReviewerId(int reviewerId) {
+        return reviewRepository
+                .findReviewByReviewerId(reviewerId)
+                .stream()
+                .map(Review::getPaperId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Method that gets the track deadline from the users' microservice.
+     * @param trackID the ID of the track.
+     * @param restTemplate the rest template.
+     * @return an optional containing the deadline; if any.
+     */
+    public Optional<String> getTrackDeadline(int trackID, RestTemplate restTemplate) {
+        String submissionsUri = "localhost:8082" + trackID + "/deadline";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.exchange(submissionsUri, HttpMethod.GET, entity, String.class);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+        String submissionDeadline = response.getBody();
+        return Optional.of(advanceOneWeek(submissionDeadline));
+    }
+
+    /**
+     * Method that advances the date by one week.
+     * @param currentDate the current date.
+     * @return the new date
+     */
+    public String advanceOneWeek(String currentDate) {
+        LocalDate currentDateObject = LocalDate.parse(currentDate);
+        LocalDate advanced = currentDateObject.plusWeeks(1);
+        return advanced.toString();
+    }
+
+    public List<Review> findAllReviewsByPaperId(int paperId) {
+        return reviewRepository.findReviewsByPaperId(paperId);
     }
 }
 

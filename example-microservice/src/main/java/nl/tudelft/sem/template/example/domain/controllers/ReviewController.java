@@ -3,17 +3,16 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import nl.tudelft.sem.template.api.ReviewApi;
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.models.TrackPhase;
+import nl.tudelft.sem.template.example.domain.services.*;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -25,13 +24,30 @@ public class ReviewController implements ReviewApi {
 
     private final UserService userService;
     private final ReviewService reviewService;
-
+    private final ReviewerPreferencesService reviewerPreferencesService;
     private final PaperService paperService;
+    private final TrackPhaseService trackPhaseService;
 
-    public ReviewController(UserService userService, ReviewService reviewService, PaperService paperService) {
+    public ReviewController(UserService userService, ReviewService reviewService, ReviewerPreferencesService reviewerPreferencesService, PaperService paperService,
+                            TrackPhaseService trackPhaseService) {
         this.userService = userService;
         this.reviewService = reviewService;
+        this.reviewerPreferencesService = reviewerPreferencesService;
         this.paperService = paperService;
+        this.trackPhaseService = trackPhaseService;
+    }
+
+    @Override
+    public ResponseEntity<Void> reviewStartBiddingForTrackGet(Integer trackID) {
+        if (trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        Optional<List<Integer>> papersOpt = trackPhaseService
+                .getTrackPapers(trackID, new RestTemplate());
+        if (papersOpt.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        TrackPhase phase = new TrackPhase(papersOpt.get());
+        trackPhaseService.saveTrackPhase(phase);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
 
@@ -135,6 +151,77 @@ public class ReviewController implements ReviewApi {
          */
     private boolean nullCheck(Integer userId, Integer trackID, List<Review> reviews) {
         return userId == null || trackID == null || reviews.isEmpty();
+    }
+
+    @Override
+    public ResponseEntity<Review> reviewEditConfidenceScorePut(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID,
+            @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
+    ) {
+        if(userID == null || review == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(userID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        if(!reviewService.existsReview(review.getId()))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Review updatedReview = reviewService.saveAndReturnReview(review);
+        return new ResponseEntity<>(updatedReview, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<ReviewerPreferences>> reviewFindAllPreferencesByUserIdGet(
+            @NotNull @Parameter(name = "reviewerID", description = "The ID of the reviewer the reviews of whom are returned.", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewerID") Integer reviewerID
+    ) {
+        if(reviewerID == null || reviewerID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        boolean isUserValid = userService.validateUser(reviewerID);
+        if(!isUserValid)
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForReviewer(reviewerID);
+        return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
+    }
+
+    public ResponseEntity<Review> reviewEditOverallScorePut(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID,
+            @Parameter(name = "Review", description = "the review to be updated", required = true) @Valid @RequestBody Review review
+    ) {
+        return reviewEditConfidenceScorePut(userID, review);
+    }
+
+    @Override
+    public ResponseEntity<String> reviewGetBiddingDeadlineGet(Integer trackID, Integer userID) {
+        if (userID == null || userID < 0 || trackID == null || trackID < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Optional<String> deadline = reviewService.getTrackDeadline(trackID, new RestTemplate());
+        return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * POST /review/postComment : Post a comment on a review
+     * post a comment on a review
+     *
+     * @param userID  The ID of the user, used for authorization (required)
+     * @param comment The comment to post (required)
+     * @return Successful operation (status code 200)
+     * or Bad request (status code 400)
+     * or Unauthorized (status code 401)
+     * or Server error (status code 500)
+     */
+    @Override
+    public ResponseEntity<Comment> reviewPostCommentPost(
+            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+                    required = true) Integer userID,
+            @Parameter(name = "Comment", description = "the comment to post", required = true) @RequestBody
+            Comment comment) {
+        if(userID == null || comment == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(!userService.validateUser(userID))
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        Comment c = reviewService.reviewPostCommentPost(comment);
+        return new ResponseEntity<>(c, HttpStatus.OK);
     }
 
 

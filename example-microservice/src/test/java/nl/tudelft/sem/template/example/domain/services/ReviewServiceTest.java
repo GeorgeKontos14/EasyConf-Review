@@ -1,23 +1,34 @@
 package nl.tudelft.sem.template.example.domain.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 
 import nl.tudelft.sem.template.example.domain.models.PcChair;
+import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 public class ReviewServiceTest {
+    private RestTemplate restTemplate;
     private ReviewService sut;
     private ReviewRepository repo;
     private PcChairRepository pcChairRepository;
+    private ReviewerRepository reviewerRepository;
+    private CommentRepository commentRepository;
     private List<Paper> papers;
     private List<ReviewerPreferences> prefs;
     private Map<Integer, List<Integer>> conflicts;
@@ -27,9 +38,12 @@ public class ReviewServiceTest {
      */
     @BeforeEach
     public void setup() {
+        restTemplate = Mockito.mock(RestTemplate.class);
         repo = Mockito.mock(ReviewRepository.class);
         pcChairRepository = Mockito.mock(PcChairRepository.class);
-        sut = new ReviewService(repo, pcChairRepository);
+        reviewerRepository = Mockito.mock(ReviewerRepository.class);
+        commentRepository = Mockito.mock(CommentRepository.class);
+        sut = new ReviewService(repo, pcChairRepository, reviewerRepository, commentRepository);
         Paper p1 = new Paper();
         p1.setId(1);
         p1.setAuthors(Arrays.asList(1,2,3,4));
@@ -206,5 +220,59 @@ public class ReviewServiceTest {
         assertThat(sut.verifyPcChair(1, 1)).isTrue();
         assertThat(sut.verifyPcChair(1, 4)).isFalse();
         assertThat(sut.verifyPcChair(2, 3)).isFalse();
+    }
+
+    @Test
+    public void postCommentTest() {
+        Comment c = new Comment();
+        assertThat(sut.reviewPostCommentPost(c)).isEqualTo(c);
+    }
+
+    @Test
+    public void findAllPapersByReviewerIdTest() {
+        Review r = new Review();
+        r.id(7);
+        r.reviewerId(5);
+        r.paperId(1);
+        Mockito.when(repo.findReviewByReviewerId(5))
+                .thenReturn(List.of(r));
+        assertThat(sut.findAllPapersByReviewerId(5)).isEqualTo(List.of(1));
+    }
+
+    /**
+     * Test for the functionality of the getTrackDeadline method.
+     */
+    @Test
+    public void getTrackDeadlineOkTest() {
+        Mockito.when(restTemplate
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.of(Optional.of("2024-10-10")));
+        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get()).isEqualTo("2024-10-17");
+    }
+
+    /**
+     * Test that makes the getTrackDeadline method throw an exception.
+     */
+    @Test
+    public void getTrackDeadlineExceptionTest() {
+        Mockito.when(restTemplate
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(IllegalArgumentException.class);
+        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        assertThat(result.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void advanceOneWeekTest() {
+        assertThat(sut.advanceOneWeek("2024-12-31")).isEqualTo("2025-01-07");
+    }
+
+    @Test
+    public void findAllReviewsByPaperId() {
+        Mockito.when(repo.findReviewsByPaperId(1))
+                .thenReturn(List.of(new Review()));
+        assertThat(sut.findAllReviewsByPaperId(1)).isEqualTo(List.of(new Review()));
     }
 }

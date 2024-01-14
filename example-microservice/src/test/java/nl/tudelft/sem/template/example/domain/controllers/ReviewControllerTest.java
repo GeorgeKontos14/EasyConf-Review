@@ -1,18 +1,21 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.services.*;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +24,8 @@ public class ReviewControllerTest {
     private UserService userService;
     private ReviewService reviewService;
     private PaperService paperService;
+    private ReviewerPreferencesService reviewerPreferencesService;
+    private TrackPhaseService trackPhaseService;
     private ReviewController sut;
 
     /**
@@ -39,6 +44,22 @@ public class ReviewControllerTest {
     }
 
     /**
+     * Constructor method for reviewer Preferences.
+     * @param reviewerId the id of the reviewer.
+     * @param paperId the id of the paper.
+     * @param preferenceEnum the preference.
+     * @return the reviewer preferences object.
+     */
+    private ReviewerPreferences buildReviewPreferences(
+            int reviewerId, int paperId, ReviewerPreferences.ReviewerPreferenceEnum preferenceEnum) {
+        ReviewerPreferences pref = new ReviewerPreferences();
+        pref.setReviewerId(reviewerId);
+        pref.setPaperId(paperId);
+        pref.setReviewerPreference(preferenceEnum);
+        return pref;
+    }
+
+    /**
      * Setup for the tests.
      */
     @BeforeEach
@@ -46,7 +67,10 @@ public class ReviewControllerTest {
         userService = Mockito.mock(UserService.class);
         reviewService = Mockito.mock(ReviewService.class);
         paperService = Mockito.mock(PaperService.class);
-        sut = new ReviewController(userService, reviewService, paperService);
+        reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
+        trackPhaseService = Mockito.mock(TrackPhaseService.class);
+        sut = new ReviewController(userService, reviewService, reviewerPreferencesService,
+                paperService, trackPhaseService);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
     }
@@ -142,4 +166,240 @@ public class ReviewControllerTest {
         assertThat(response.getBody()).isEqualTo(reviews);
     }
 
+    @Test
+    public void assignPapersBadRequestTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .reviewAssignPapersPost(null, 1, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .reviewAssignPapersPost(1, null, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .reviewAssignPapersPost(1, 1, new ArrayList<>());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void assignPapersUnauthorizedTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response =
+                sut.reviewAssignPapersPost(1,2,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void assignPapersOkTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .reviewAssignPapersPost(1,1,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(reviewService).saveReviews(Arrays.asList(r1, r2));
+    }
+
+    @Test
+    public void changeReviewsBadRequestTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        ResponseEntity<Void> response = sut
+                .changeReviews(null, 1, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .changeReviews(1, null, Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut
+                .changeReviews(1, 1, new ArrayList<>());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void changeReviewsUnauthorizedTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        Mockito.when(reviewService.verifyPcChair(3,1)).thenReturn(false);
+        Mockito.when(userService.validateUser(3)).thenReturn(true);
+        ResponseEntity<Void> response =
+                sut.changeReviews(1,2,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        response =
+                sut.changeReviews(1,3,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void ChangeReviewsOkTest() {
+        Review r1 = buildReview(1,1,1);
+        Review r2 = buildReview(2,2,2);
+        Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(true);
+        ResponseEntity<Void> response = sut
+                .changeReviews(1,1,Arrays.asList(r1,r2));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(reviewService).saveReviews(Arrays.asList(r1, r2));
+    }
+
+    @Test
+    public void findAllReviewsByUserIdBadRequestTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllReviewsByUserIDGet(-1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void findAllReviewsByUserIdUnauthorizedTest() {
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Mockito.verify(userService).validateUser(2);
+    }
+
+    @Test
+    public void findAllReviewsByUserIdOkTest() {
+        List<Review> reviews = Arrays.asList(
+                buildReview(1,1,2), buildReview(2,1,3));
+        Mockito.when(reviewService.reviewsByReviewer(1)).thenReturn(reviews);
+        ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByUserIDGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody()).isEqualTo(reviews);
+    }
+
+
+    @Test
+    void reviewEditConfidenceScorePut() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+        Mockito.when(reviewService.existsReview(2)).thenReturn(true);
+        Review review = buildReview(2,3,4);
+        review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_1);
+        Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4,review);
+        assertThat(receivedReview.getBody()).isEqualTo(review);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void reviewEditConfidenceScore() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
+        Mockito.when(reviewService.existsReview(2)).thenReturn(false);
+        Review review = buildReview(2,3,4);
+        review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_2);
+        Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4,review);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void reviewEditConfidenceScoreBadReq()
+    {
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4, null);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void postReviewInvalidTest() {
+        ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        assertThat(sut.reviewPostCommentPost(null, new Comment())).isEqualTo(response);
+        assertThat(sut.reviewPostCommentPost(1, null)).isEqualTo(response);
+
+        assertThat(sut.reviewPostCommentPost(-1, new Comment()))
+                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @Test
+    void postReviewTest() {
+        Comment c = new Comment();
+        Mockito.when(reviewService.reviewPostCommentPost(c)).thenReturn(c);
+        assertThat(sut.reviewPostCommentPost(1, c)).isEqualTo(new ResponseEntity<>(c, HttpStatus.OK));
+    }
+
+
+    @Test
+    public void findAllPreferencesByUserIdBadRequest() {
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewFindAllPreferencesByUserIdGet(-3);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void findAllPreferencesByUserIdUnauthorizedTest() {
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void findAllPreferencesByUserIdOkTest() {
+        ReviewerPreferences pref1 = buildReviewPreferences(1,2,
+                ReviewerPreferences.ReviewerPreferenceEnum.CAN_REVIEW);
+        ReviewerPreferences pref2 = buildReviewPreferences(2,4,
+                ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW);
+        Mockito.when(reviewerPreferencesService.getPreferencesForReviewer(1))
+                .thenReturn(Arrays.asList(pref1, pref2));
+        ResponseEntity<List<ReviewerPreferences>> response = sut
+                .reviewFindAllPreferencesByUserIdGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(response.getBody()).isEqualTo(Arrays.asList(pref1, pref2));
+    }
+
+    @Test
+    public void startBiddingForTrackBadRequestTest() {
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewStartBiddingForTrackGet(-1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void getBiddingDeadlineBadRequestTest() {
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(null, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(-1, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(1, null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.reviewGetBiddingDeadlineGet(1, -1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void startBiddingForTrackNotFoundTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void startBiddingDeadlineOkTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(anyInt(), any(RestTemplate.class)))
+                .thenReturn(Optional.of(Arrays.asList(1,2,3)));
+        ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    }
+
+    @Test
+    public void getBiddingDeadlineUnauthorizedTest() {
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1, 2);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void getBiddingDeadlineNotFoundTest() {
+        Mockito.when(reviewService.getTrackDeadline(2, new RestTemplate()))
+                .thenReturn(Optional.empty());
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(2,1);
+        assertThat(response.getStatusCode()).isEqualTo((HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    public void getBiddingDeadlineOkTest() {
+        Optional<String> opt = Optional.of("2024-12-12");
+        Mockito.when(reviewService.getTrackDeadline(anyInt(), any(RestTemplate.class)))
+                .thenReturn(opt);
+        ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    }
 }
