@@ -1,6 +1,11 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import nl.tudelft.sem.template.example.domain.models.PcChair;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairReviewCommentRepository;
 import nl.tudelft.sem.template.model.Comment;
@@ -9,10 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class CommentServiceTest {
 
@@ -21,8 +22,7 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
 
     @BeforeEach
-    void setup()
-    {
+    void setup() {
         pcChairReviewCommentRepository = Mockito.mock(PcChairReviewCommentRepository.class);
         commentRepository = Mockito.mock(CommentRepository.class);
         commentService = new CommentService(commentRepository, pcChairReviewCommentRepository);
@@ -40,10 +40,9 @@ class CommentServiceTest {
         goodComment.setAuthorId(author);
         goodComment.setPaperId(paper);
         goodComment.setConfidential(confidence);
-        goodComment.setId(3);
         when(commentRepository.save(any())).thenReturn(goodComment);
         Comment comment = commentService.addComment(text, author, paper, confidence);
-        verify(commentRepository, times(1)).save(any());
+        verify(commentRepository, times(1)).save(goodComment);
         assertThat(comment).isEqualTo(goodComment);
     }
 
@@ -57,6 +56,6 @@ class CommentServiceTest {
         when(pcChairReviewCommentRepository.save(any())).thenReturn(pcChairReviewComment);
         PcChairReviewComment obj = commentService.pcChairLeaveCommentOnReview(comment, 2);
         assertThat(obj).isEqualTo(pcChairReviewComment);
-
+        Mockito.verify(pcChairReviewCommentRepository).save(pcChairReviewComment);
     }
 }
