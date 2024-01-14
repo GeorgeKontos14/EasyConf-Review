@@ -1,5 +1,7 @@
 package nl.tudelft.sem.template.example.domain.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
@@ -7,7 +9,6 @@ import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class RevPrefsUtilsTest {
 
