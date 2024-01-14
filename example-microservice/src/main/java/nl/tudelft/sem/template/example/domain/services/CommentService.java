@@ -19,7 +19,7 @@ public class CommentService {
      * @param pcChairReviewCommentRepository reference to a PcChairReviewCommentRepository
      */
 
-    CommentService(CommentRepository commentRepository, PcChairReviewCommentRepository pcChairReviewCommentRepository){
+    CommentService(CommentRepository commentRepository, PcChairReviewCommentRepository pcChairReviewCommentRepository) {
         this.commentRepository = commentRepository;
         this.pcChairReviewCommentRepository = pcChairReviewCommentRepository;
     }
@@ -33,8 +33,7 @@ public class CommentService {
      * @param isConfidential the confidentiality status of this comment
      * @return a Comment object that is saved to the database
      */
-    public Comment addComment(String commentText, Integer userId, Integer paperId, Boolean isConfidential)
-    {
+    public Comment addComment(String commentText, Integer userId, Integer paperId, Boolean isConfidential) {
         Comment comment = new Comment();
         comment.setAuthorId(userId);
         comment.setText(commentText);
@@ -50,8 +49,7 @@ public class CommentService {
      * @param reviewId - the reviewId for the review this comment is left on
      * @return a PcChairReviewComment that is saved to the database
      */
-    public PcChairReviewComment pcChairLeaveCommentOnReview(Comment comment, Integer reviewId)
-    {
+    public PcChairReviewComment pcChairLeaveCommentOnReview(Comment comment, Integer reviewId) {
         PcChairReviewComment pcChairReviewComment = new PcChairReviewComment();
         pcChairReviewComment.setId(comment.getId());
         pcChairReviewComment.setReviewId(reviewId);

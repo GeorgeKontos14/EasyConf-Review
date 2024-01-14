@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
@@ -123,7 +122,7 @@ class PaperServiceTest {
     }
 
     @Test
-    void paperGetAllPapersForIDGetTest() {
+    void paperGetAllPapersForIdGetTest() {
         Paper p = new Paper();
         p.id(1);
         Mockito.when(paperRepository.findAllById(List.of(1)))

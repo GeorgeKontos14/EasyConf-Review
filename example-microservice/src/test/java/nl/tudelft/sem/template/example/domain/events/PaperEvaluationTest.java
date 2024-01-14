@@ -1,5 +1,9 @@
 package nl.tudelft.sem.template.example.domain.events;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
@@ -9,11 +13,6 @@ import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class PaperEvaluationTest {
 

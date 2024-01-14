@@ -7,7 +7,9 @@ import lombok.Getter;
 
 @Getter
 public class PaperAssigned {
-    private final int paperId, reviewerId;
+    private final int paperId;
+    private final int reviewerId;
+
     public PaperAssigned(int paperId, int reviewerId) {
         this.paperId = paperId;
         this.reviewerId = reviewerId;
