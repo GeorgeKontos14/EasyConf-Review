@@ -3,13 +3,16 @@ package nl.tudelft.sem.template.example.domain.services;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,6 +38,13 @@ public class PaperService {
         return paperRepository.findById(paperId);
     }
 
+    /**
+     * Gets the paper object from the submission.
+     *
+     * @param paperId to get
+     * @param restTemplate to follow
+     * @return the optional of a paper response
+     */
     public Optional<PaperResponse> getPaperObjectFromSubmissions(int paperId, RestTemplate restTemplate) {
         String submissionsUri = "localhost:8082/submissions/" + paperId + "/info";
         HttpHeaders headers = new HttpHeaders();
@@ -51,15 +61,23 @@ public class PaperService {
         return Optional.ofNullable(result.getBody());
     }
 
+    /**
+     * Gets all the comments on a single paper.
+     *
+     * @param paperId of the paper
+     * @return a list of comments
+     */
     public List<Comment> paperGetPaperCommentsGet(int paperId) {
-        if (paperRepository.findById(paperId).isEmpty())
+        if (paperRepository.findById(paperId).isEmpty()) {
             // This probably shouldn't be like this, but it is like this in the specs.yaml
             return Collections.emptyList();
+        }
         return commentRepository.findCommentByPaperId(paperId);
     }
 
     /**
-     * This method checks whether the paper already exists in the db
+     * This method checks whether the paper already exists in the db.
+     *
      * @param paperId the paper id to check
      * @return true if the paper is in the db
      */
@@ -68,15 +86,17 @@ public class PaperService {
     }
 
     /**
-     * This method will update the final verdict of a given paper
+     * This method will update the final verdict of a given paper.
+     *
      * @param paperId the id of the paper to update
      * @param verdict to set
      * @return whether the method succeeded
      */
     public boolean paperUpdatePaperStatusPut(int paperId, Paper.FinalVerdictEnum verdict) {
         Optional<Paper> optional = paperRepository.findById(paperId);
-        if (optional.isEmpty())
+        if (optional.isEmpty()) {
             return false;
+        }
         Paper paper = optional.get();
         paper.finalVerdict(verdict);
         paperRepository.save(paper);

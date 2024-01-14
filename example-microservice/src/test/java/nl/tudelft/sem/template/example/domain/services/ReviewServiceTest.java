@@ -43,7 +43,7 @@ public class ReviewServiceTest {
         pcChairRepository = Mockito.mock(PcChairRepository.class);
         reviewerRepository = Mockito.mock(ReviewerRepository.class);
         commentRepository = Mockito.mock(CommentRepository.class);
-        sut = new ReviewService(repo, pcChairRepository, reviewerRepository, commentRepository);
+        sut = new ReviewService(repo, pcChairRepository, commentRepository);
         Paper p1 = new Paper();
         p1.setId(1);
         p1.setAuthors(Arrays.asList(1,2,3,4));

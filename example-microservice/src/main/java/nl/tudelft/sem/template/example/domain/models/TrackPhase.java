@@ -1,15 +1,18 @@
 package nl.tudelft.sem.template.example.domain.models;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.persistence.*;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.validation.Valid;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -31,6 +34,7 @@ public class TrackPhase {
         FINAL("Final");
 
         private final String value;
+
         PhaseEnum(String value) {
             this.value = value;
         }
@@ -45,6 +49,12 @@ public class TrackPhase {
             return String.valueOf(value);
         }
 
+        /**
+         * Parses a string to the PhaseEnum.
+         *
+         * @param value of the string to parse
+         * @return a PhaseEnum
+         */
         @JsonCreator
         public static PhaseEnum fromValue(String value) {
             for (PhaseEnum b : PhaseEnum.values()) {

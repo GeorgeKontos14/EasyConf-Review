@@ -1,8 +1,7 @@
 package nl.tudelft.sem.template.example.domain.controllers;
 
-import nl.tudelft.sem.template.model.Review;
-
 import java.util.List;
+import nl.tudelft.sem.template.model.Review;
 
 public class NullChecks {
     public static boolean nullCheck(Integer id) {
