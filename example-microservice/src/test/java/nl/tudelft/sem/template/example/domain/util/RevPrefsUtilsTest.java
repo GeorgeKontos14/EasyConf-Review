@@ -1,19 +1,15 @@
 package nl.tudelft.sem.template.example.domain.util;
 
+import java.util.Arrays;
+import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewerPreferencesRepository;
-import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RPUtilsTest {
+public class RevPrefsUtilsTest {
 
     private List<ReviewerPreferences> preferences;
     private List<PreferenceEntity> entities;
@@ -43,7 +39,7 @@ public class RPUtilsTest {
 
     @Test
     public void convertTest() {
-        assertThat(RPUtils.convert(entities)).isEqualTo(preferences);
+        assertThat(RevPreftils.convert(entities)).isEqualTo(preferences);
     }
 
 }

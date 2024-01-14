@@ -1,12 +1,12 @@
 package nl.tudelft.sem.template.example.domain.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class RPUtils {
+public class RevPreftils {
 
     /**
      * Converts a list of Preference Entities to ReviewerPreferences objects.

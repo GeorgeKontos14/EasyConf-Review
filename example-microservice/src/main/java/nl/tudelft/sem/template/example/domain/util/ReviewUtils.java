@@ -1,12 +1,13 @@
 package nl.tudelft.sem.template.example.domain.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 public class ReviewUtils {
 
@@ -28,7 +29,7 @@ public class ReviewUtils {
         }
         List<Review> reviews = new ArrayList<>();
         for (Paper paper : papers) {
-            reviews.addAll(assignReviewersToPaper(paper, conflicts , preferencesMap));
+            reviews.addAll(assignReviewersToPaper(paper, conflicts, preferencesMap));
         }
         return reviews;
     }
@@ -38,8 +39,8 @@ public class ReviewUtils {
      * reviewers to the paper, while making sure there are few conflicts and while the preferences of the reviewers
      * are kept in mind.
      *
-     * @param paper to assign the reviewers to
-     * @param conflicts of interest of the reviewers
+     * @param paper          to assign the reviewers to
+     * @param conflicts      of interest of the reviewers
      * @param preferencesMap with all the preferences of the reviewers
      * @return a list with all the reviews that have been created for the paper
      */
@@ -73,9 +74,9 @@ public class ReviewUtils {
      * This method assigns papers without keeping in mind the preferences or COI's of the reviewer, in case the previous
      * algorithm fails.
      *
-     * @param paper to assign reviews for
-     * @param count the count of reviews that have already been assigned
-     * @param cannot a list of reviewers who do not want to review this paper
+     * @param paper        to assign reviews for
+     * @param count        the count of reviews that have already been assigned
+     * @param cannot       a list of reviewers who do not want to review this paper
      * @param withConflict a list of reviewers who have a conflict of interest with the papers author
      * @return a list of reviews that have been created for the given paper
      */

@@ -1,19 +1,16 @@
 package nl.tudelft.sem.template.example.domain.util;
 
-import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
-import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

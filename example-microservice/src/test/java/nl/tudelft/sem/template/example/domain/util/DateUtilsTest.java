@@ -1,9 +1,9 @@
 package nl.tudelft.sem.template.example.domain.util;
 
-import org.junit.jupiter.api.Test;
-
 import static nl.tudelft.sem.template.example.domain.util.DateUtils.advanceOneWeek;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 public class DateUtilsTest {
 

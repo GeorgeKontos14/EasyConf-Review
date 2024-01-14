@@ -1,10 +1,9 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewerPreferencesRepository;
-import nl.tudelft.sem.template.example.domain.util.RPUtils;
+import nl.tudelft.sem.template.example.domain.util.RevPreftils;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +27,7 @@ public class ReviewerPreferencesService {
      * @return the list of reviewer preferences of a given reviewer.
      */
     public List<ReviewerPreferences> getPreferencesForReviewer(int reviewerId) {
-        return RPUtils.convert(reviewerPreferencesRepository.findAllByReviewerId(reviewerId));
+        return RevPreftils.convert(reviewerPreferencesRepository.findAllByReviewerId(reviewerId));
     }
 
     /**
@@ -38,11 +37,12 @@ public class ReviewerPreferencesService {
      * @return the list of reviewer preferences for a given paper.
      */
     public List<ReviewerPreferences> getPreferencesForPaper(int paperId) {
-        return RPUtils.convert(reviewerPreferencesRepository.findAllByPaperId(paperId));
+        return RevPreftils.convert(reviewerPreferencesRepository.findAllByPaperId(paperId));
     }
 
     /**
-     * Saves the provided ReviewerPreference entity
+     * Saves the provided ReviewerPreference entity.
+     *
      * @param preferenceEntity the entity which should be saved
      * @return the updated PreferenceEntity Object
      */
