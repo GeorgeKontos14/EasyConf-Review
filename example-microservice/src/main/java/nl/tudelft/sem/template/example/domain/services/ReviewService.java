@@ -62,39 +62,72 @@ public class ReviewService {
             preferencesMap.put(Arrays.asList(pref.getReviewerId(), pref.getPaperId()), pref.getReviewerPreference());
         }
         List<Review> reviews = new ArrayList<>();
-        int count;
         for (Paper paper : papers) {
-            count = 0;
-            List<Integer> cannot = new ArrayList<>();
-            List<Integer> withConflict = new ArrayList<>();
-            for (int reviewer : conflicts.keySet()) {
-                if (!intersect(paper.getAuthors(), conflicts.get(reviewer))) {
-                    if (preferencesMap.get(Arrays.asList(reviewer, paper.getId()))
-                            != ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
-                        count++;
-                        reviews.add(createReview(paper.getId(), reviewer));
-                    } else {
-                        cannot.add(reviewer);
-                    }
+            reviews.addAll(assignReviewersToPaper(paper, conflicts , preferencesMap));
+        }
+        return reviews;
+    }
+
+    /**
+     * This method takes a paper and the conflicts and preferences of all the reviewers in the database and assigns
+     * reviewers to the paper, while making sure there are few conflicts and while the preferences of the reviewers
+     * are kept in mind.
+     *
+     * @param paper to assign the reviewers to
+     * @param conflicts of interest of the reviewers
+     * @param preferencesMap with all the preferences of the reviewers
+     * @return a list with all the reviews that have been created for the paper
+     */
+    private List<Review> assignReviewersToPaper(Paper paper, Map<Integer, List<Integer>> conflicts, Map<List<Integer>,
+            ReviewerPreferences.ReviewerPreferenceEnum> preferencesMap) {
+        int count = 0;
+        List<Review> reviews = new ArrayList<>(3);
+        List<Integer> cannot = new ArrayList<>();
+        List<Integer> withConflict = new ArrayList<>();
+        for (int reviewer : conflicts.keySet()) {
+            if (!intersect(paper.getAuthors(), conflicts.get(reviewer))) {
+                if (preferencesMap.get(Arrays.asList(reviewer, paper.getId()))
+                        != ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW) {
+                    count++;
+                    reviews.add(createReview(paper.getId(), reviewer));
                 } else {
-                    withConflict.add(reviewer);
+                    cannot.add(reviewer);
                 }
-                if (count == 3) {
-                    break;
-                }
+            } else {
+                withConflict.add(reviewer);
             }
-            int i = 0;
-            while (count < 3 && i < cannot.size()) {
-                count++;
-                reviews.add(createReview(paper.getId(), cannot.get(i)));
-                i++;
+            if (count == 3) {
+                break;
             }
-            i = 0;
-            while (count < 3 && i < withConflict.size()) {
-                count++;
-                reviews.add(createReview(paper.getId(), withConflict.get(i)));
-                i++;
-            }
+        }
+        reviews.addAll(assignWithoutPreference(paper, count, cannot, withConflict));
+        return reviews;
+    }
+
+    /**
+     * This method assigns papers without keeping in mind the preferences or COI's of the reviewer, in case the previous
+     * algorithm fails.
+     *
+     * @param paper to assign reviews for
+     * @param count the count of reviews that have already been assigned
+     * @param cannot a list of reviewers who do not want to review this paper
+     * @param withConflict a list of reviewers who have a conflict of interest with the papers author
+     * @return a list of reviews that have been created for the given paper
+     */
+    private List<Review> assignWithoutPreference(Paper paper, int count, List<Integer> cannot,
+                                                 List<Integer> withConflict) {
+        List<Review> reviews = new ArrayList<>(3 - count);
+        int i = 0;
+        while (count < 3 && i < cannot.size()) {
+            count++;
+            reviews.add(createReview(paper.getId(), cannot.get(i)));
+            i++;
+        }
+        i = 0;
+        while (count < 3 && i < withConflict.size()) {
+            count++;
+            reviews.add(createReview(paper.getId(), withConflict.get(i)));
+            i++;
         }
         return reviews;
     }
