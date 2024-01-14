@@ -89,15 +89,21 @@ public class PaperService {
      * This method will update the final verdict of a given paper.
      *
      * @param paperId the id of the paper to update
-     * @param verdict to set
+     * @param status to set. Must be either "Unresolved", "Accepted" or "Rejected"
      * @return whether the method succeeded
      */
-    public boolean paperUpdatePaperStatusPut(int paperId, Paper.FinalVerdictEnum verdict) {
+    public boolean paperUpdatePaperStatusPut(int paperId, String status) {
         Optional<Paper> optional = paperRepository.findById(paperId);
         if (optional.isEmpty()) {
             return false;
         }
         Paper paper = optional.get();
+
+        Paper.FinalVerdictEnum verdict = null;
+        if (status.equals("Accepted") || status.equals("Rejected")) {
+            verdict = Paper.FinalVerdictEnum.fromValue(status);
+        }
+
         paper.finalVerdict(verdict);
         paperRepository.save(paper);
         return true;

@@ -110,7 +110,7 @@ class PaperServiceTest {
     @Test
     void paperUpdatePaperStatusPutTest() {
         Mockito.when(paperRepository.findById(1)).thenReturn(Optional.of(new Paper()));
-        assertThat(paperService.paperUpdatePaperStatusPut(1, null))
+        assertThat(paperService.paperUpdatePaperStatusPut(1, "Accepted"))
                 .isEqualTo(true);
     }
 

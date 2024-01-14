@@ -278,11 +278,13 @@ public class PaperControllerTest {
         Mockito.when(paperService.isExistingPaper(5)).thenReturn(true);
         Mockito.when(paperService.isExistingPaper(6)).thenReturn(true);
         Mockito.when(paperService.paperUpdatePaperStatusPut(5, null)).thenReturn(true);
-        Mockito.when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.ACCEPTED))
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, "Accepted"))
                 .thenReturn(true);
-        when(paperService.paperUpdatePaperStatusPut(5, Paper.FinalVerdictEnum.REJECTED))
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, "Rejected"))
                 .thenReturn(true);
-        Mockito.when(paperService.paperUpdatePaperStatusPut(6, Paper.FinalVerdictEnum.REJECTED))
+        Mockito.when(paperService.paperUpdatePaperStatusPut(5, "Unresolved"))
+                .thenReturn(true);
+        Mockito.when(paperService.paperUpdatePaperStatusPut(6, "Rejected"))
                 .thenReturn(false);
         assertThat(paperController.paperUpdatePaperStatusPut(5, "Unresolved", 1))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));

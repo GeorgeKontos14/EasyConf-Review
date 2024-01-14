@@ -254,16 +254,11 @@ public class PaperController implements PaperApi {
         if (!paperService.isExistingPaper(paperId)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        Paper.FinalVerdictEnum verdict;
-        if (status.equals("Unresolved")) {
-            verdict = null;
-        } else if (status.equals("Accepted") || status.equals("Rejected")) {
-            verdict = Paper.FinalVerdictEnum.fromValue(status);
-        } else {
+        if (!(status.equals("Unresolved") || status.equals("Accepted") || status.equals("Rejected"))) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        boolean success = paperService.paperUpdatePaperStatusPut(paperId, verdict);
+
+        boolean success = paperService.paperUpdatePaperStatusPut(paperId, status);
         if (!success) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
