@@ -49,4 +49,14 @@ public class ReviewerPreferencesService {
     public List<ReviewerPreferences> getPreferencesForPaper(int paperId) {
         return convert(reviewerPreferencesRepository.findAllByPaperId(paperId));
     }
+
+    /**
+     * Saves the provided ReviewerPreference entity
+     * @param preferenceEntity the entity which should be saved
+     * @return the updated PreferenceEntity Object
+     */
+
+    public PreferenceEntity saveReviewerPreference(PreferenceEntity preferenceEntity) {
+        return reviewerPreferencesRepository.save(preferenceEntity);
+    }
 }

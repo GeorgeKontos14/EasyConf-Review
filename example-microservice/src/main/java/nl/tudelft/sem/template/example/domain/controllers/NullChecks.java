@@ -21,4 +21,9 @@ public class NullChecks {
         return nullCheck(id1, id2) || list == null || list.isEmpty();
     }
 
+    public static boolean nullCheck(Integer id1, Integer id2, Object o) {
+        return nullCheck(id1, id2) || o == null;
+    }
+
+
 }
