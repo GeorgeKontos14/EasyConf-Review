@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -13,17 +17,14 @@ import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import nl.tudelft.sem.template.model.Review;
-import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -32,8 +33,8 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 public class PaperController implements PaperApi {
 
-    private UserService userService;
-    private PaperService paperService;
+    private final UserService userService;
+    private final PaperService paperService;
     private final ReviewerPreferencesService reviewerPreferencesService;
     private final ReviewService reviewService;
 
@@ -126,7 +127,8 @@ public class PaperController implements PaperApi {
     }
 
     /**
-     * endpoint for getting title and abstract
+     * endpoint for getting title and abstract.
+     *
      * @param paperID The ID of the paper we want to view the title and abstract (required)
      * @param userID The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
@@ -258,7 +260,8 @@ public class PaperController implements PaperApi {
     }
 
     /**
-     * endpoint that saves the provided preference a reviewer has over a paper
+     * endpoint that saves the provided preference a reviewer has over a paper.
+     *
      * @param reviewerId The id of the reviewer (required)
      * @param paperId The id of the paper (required)
      * @param preference The preference score (required)
