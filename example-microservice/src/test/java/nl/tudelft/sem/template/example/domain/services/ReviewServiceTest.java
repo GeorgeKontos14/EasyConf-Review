@@ -1,8 +1,5 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
@@ -21,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 
 public class ReviewServiceTest {
     private RestTemplate restTemplate;
@@ -95,6 +95,7 @@ public class ReviewServiceTest {
         List<Integer> a = Arrays.asList(1,2,3,4,5,6,82);
         List<Integer> b = Arrays.asList(5,6,7,82);
         assertThat(sut.intersect(a, b)).isTrue();
+        assertThat(sut.intersect(b, a)).isTrue();
     }
 
     /**
@@ -208,6 +209,14 @@ public class ReviewServiceTest {
         sut.saveReviews(assignments);
     }
 
+    @Test
+    public void createReviewTest() {
+        Review r = new Review();
+        r.paperId(1);
+        r.reviewerId(2);
+        assertThat(sut.createReview(1,2)).isEqualTo(r);
+    }
+
     /**
      * Test for the verifyPcChair method.
      */
@@ -275,4 +284,44 @@ public class ReviewServiceTest {
                 .thenReturn(List.of(new Review()));
         assertThat(sut.findAllReviewsByPaperId(1)).isEqualTo(List.of(new Review()));
     }
+
+    @Test
+    public void reviewsByReviewerTest() {
+        Review r1 = sut.createReview(1,1);
+        Review r2 = sut.createReview(2,2);
+        Mockito.when(repo.findReviewByReviewerId(1)).thenReturn(Arrays.asList(r1,r2));
+        assertThat(sut.reviewsByReviewer(1)).isEqualTo(Arrays.asList(r1,r2));
+    }
+
+    @Test
+    public void reviewsByPaperTest() {
+        Review r1 = sut.createReview(1,1);
+        Review r2 = sut.createReview(2,2);
+        Mockito.when(repo.findReviewsByPaperId(1)).thenReturn(Arrays.asList(r1,r2));
+        assertThat(sut.reviewsByPaper(1)).isEqualTo(Arrays.asList(r1,r2));
+    }
+
+    @Test
+    public void findReviewObjectTest() {
+        Review r = sut.createReview(1,1);
+        Mockito.when(repo.findById(1)).thenReturn(Optional.of(r));
+        assertThat(sut.findReviewObjectWithId(1)).isEqualTo(Optional.of(r));
+    }
+
+    @Test
+    public void existsReviewTest() {
+        Mockito.when(repo.existsById(1)).thenReturn(true);
+        Mockito.when(repo.existsById(2)).thenReturn(false);
+        assertThat(sut.existsReview(1)).isTrue();
+        assertThat(sut.existsReview(2)).isFalse();
+    }
+
+    @Test
+    public void saveAndReturnReviewTest() {
+        Review r = sut.createReview(1,1);
+        Mockito.when(repo.save(r)).thenReturn(r);
+        assertThat(sut.saveAndReturnReview(r)).isEqualTo(r);
+        Mockito.verify(repo).save(r);
+    }
+
 }

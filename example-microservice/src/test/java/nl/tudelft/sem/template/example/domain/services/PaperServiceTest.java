@@ -1,6 +1,5 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -12,18 +11,15 @@ import java.util.Optional;
 
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
-import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -79,6 +75,16 @@ class PaperServiceTest {
     }
 
     @Test
+    public void getPaperObjectFromSubmissionsExceptionTest() {
+        RuntimeException e = Mockito.mock(RuntimeException.class);
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+                eq(PaperResponse.class))).thenThrow(e);
+        Optional<PaperResponse> res = paperService.getPaperObjectFromSubmissions(1, restTemplate);
+        assertThat(res.isEmpty()).isTrue();
+        Mockito.verify(e).printStackTrace();
+    }
+
+    @Test
     void paperGetPaperCommentsGet() {
         Comment c = new Comment();
         c.id(3);
@@ -98,6 +104,8 @@ class PaperServiceTest {
     void isExistingPaperTest() {
         Mockito.when(paperRepository.existsById(1)).thenReturn(false);
         assertThat(paperService.isExistingPaper(1)).isEqualTo(false);
+        Mockito.when(paperRepository.existsById(2)).thenReturn(true);
+        assertThat(paperService.isExistingPaper(2)).isEqualTo(true);
     }
 
     @Test

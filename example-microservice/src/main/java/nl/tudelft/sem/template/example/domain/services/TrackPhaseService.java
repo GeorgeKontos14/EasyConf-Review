@@ -5,7 +5,6 @@ import nl.tudelft.sem.template.example.domain.repositories.TrackPhaseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,10 +46,6 @@ public class TrackPhaseService {
     //Had to create this class to make the response work.
     static class IntegerList {
         List<Integer> ints;
-
-        public IntegerList() {
-            ints = new ArrayList<>();
-        }
 
         public IntegerList(List<Integer> list) {
             this.ints = list;

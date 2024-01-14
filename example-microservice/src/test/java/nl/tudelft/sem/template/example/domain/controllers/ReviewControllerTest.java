@@ -3,6 +3,7 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 
+import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
@@ -230,7 +231,7 @@ public class ReviewControllerTest {
     }
 
     @Test
-    public void ChangeReviewsOkTest() {
+    public void changeReviewsOkTest() {
         Review r1 = buildReview(1,1,1);
         Review r2 = buildReview(2,2,2);
         Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(true);
@@ -268,14 +269,20 @@ public class ReviewControllerTest {
 
     @Test
     void reviewEditConfidenceScorePut() {
-        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
         Mockito.when(reviewService.existsReview(2)).thenReturn(true);
         Review review = buildReview(2,3,4);
         review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_1);
         Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
-        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(4,review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditConfidenceScorePut(1,review);
         assertThat(receivedReview.getBody()).isEqualTo(review);
         assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void editConfidenceScoreUnauthorizedTest() {
+        Review review = buildReview(2,3,4);
+        ResponseEntity<Review> response = sut.reviewEditConfidenceScorePut(2, review);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -297,12 +304,22 @@ public class ReviewControllerTest {
     }
 
     @Test
+    public void editOverallScoreTest() {
+        Mockito.when(reviewService.existsReview(2)).thenReturn(true);
+        Review review = buildReview(2,3,4);
+        review.setConfidenceScore(Review.ConfidenceScoreEnum.NUMBER_1);
+        Mockito.when(reviewService.saveAndReturnReview(any())).thenReturn(review);
+        ResponseEntity<Review> receivedReview = sut.reviewEditOverallScorePut(1,review);
+        assertThat(receivedReview.getBody()).isEqualTo(review);
+        assertThat(receivedReview.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
     void postReviewInvalidTest() {
         ResponseEntity<Comment> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         assertThat(sut.reviewPostCommentPost(null, new Comment())).isEqualTo(response);
         assertThat(sut.reviewPostCommentPost(1, null)).isEqualTo(response);
-
-        assertThat(sut.reviewPostCommentPost(-1, new Comment()))
+        assertThat(sut.reviewPostCommentPost(2, new Comment()))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
@@ -378,6 +395,7 @@ public class ReviewControllerTest {
                 .thenReturn(Optional.of(Arrays.asList(1,2,3)));
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(trackPhaseService).saveTrackPhase(any(TrackPhase.class));
     }
 
     @Test

@@ -1,18 +1,14 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
-import nl.tudelft.sem.template.model.Review;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -58,7 +54,7 @@ public class PaperService {
     public List<Comment> paperGetPaperCommentsGet(int paperId) {
         if (paperRepository.findById(paperId).isEmpty())
             // This probably shouldn't be like this, but it is like this in the specs.yaml
-            return new ArrayList<>(0);
+            return Collections.emptyList();
         return commentRepository.findCommentByPaperId(paperId);
     }
 

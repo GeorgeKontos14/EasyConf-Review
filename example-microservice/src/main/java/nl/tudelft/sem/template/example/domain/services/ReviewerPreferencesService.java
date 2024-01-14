@@ -34,7 +34,7 @@ public class ReviewerPreferencesService {
      * @param entities the list of entities.
      * @return the list of objects.
      */
-    private List<ReviewerPreferences> convert(List<PreferenceEntity> entities) {
+    List<ReviewerPreferences> convert(List<PreferenceEntity> entities) {
         List<ReviewerPreferences> result = new ArrayList<>();
         for (PreferenceEntity e : entities)
             result.add(e.toPreferences());

@@ -99,7 +99,7 @@ public class ReviewService {
      * @param reviewerId the ID of the reviewer.
      * @return the final review object.
      */
-    private Review createReview(int paperId, int reviewerId) {
+    Review createReview(int paperId, int reviewerId) {
         Review review = new Review();
         review.reviewerId(reviewerId);
         review.paperId(paperId);
@@ -124,9 +124,6 @@ public class ReviewService {
     public boolean intersect(List<Integer> a, List<Integer> b) {
         for (int i: a)
             if (b.contains(i))
-                return true;
-        for (int j: b)
-            if (a.contains(j))
                 return true;
         return false;
     }

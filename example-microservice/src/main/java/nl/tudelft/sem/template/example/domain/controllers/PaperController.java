@@ -59,7 +59,7 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Review>> paperGetPaperReviewsGet(Integer paperId, Integer userID) {
-        if (paperId == null || paperId < 0 || userID == null || userID < 0) {
+        if (NullChecks.nullCheck(paperId, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!userService.validateUser(userID)) {
@@ -77,7 +77,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userId") Integer userId
     ) {
-        if (userId == null || paperId == null || paperId < 0 || userId < 0) {
+        if (NullChecks.nullCheck(paperId, userId)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
@@ -114,7 +114,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || paperID == null || paperID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!userService.validateUser(userID)) {
@@ -142,7 +142,7 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || paperID == null || paperID < 0 || userID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
@@ -187,7 +187,7 @@ public class PaperController implements PaperApi {
     public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
             "The ID of the paper we want to see the reviewer preferences for", required = true,
             in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
-        if (reviewerId == null || reviewerId < 0)
+        if (NullChecks.nullCheck(reviewerId))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         if (!userService.validateUser(reviewerId)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -205,7 +205,7 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to see the reviewer preferences for", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperID,
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (userID == null || userID < 0 || paperID == null || paperID < 0)
+        if (NullChecks.nullCheck(paperID, userID))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         boolean isUserValid = userService.validateUser(userID);
         if (!isUserValid)
@@ -235,7 +235,7 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userID
     ) {
-        if (paperID == null || userID == null || paperID < 0 || userID < 0) {
+        if (NullChecks.nullCheck(paperID, userID)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (status == null) {
@@ -277,7 +277,7 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
             @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "preference", required = true) String preference
     ) {
-        if(reviewerId == null || paperId == null || preference == null)
+        if(NullChecks.nullCheck(reviewerId, paperId, preference))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         if(!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
         && !Objects.equals(preference, "NEUTRAL"))
