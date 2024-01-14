@@ -142,29 +142,26 @@ class PaperServiceTest {
     }
 
     @Test
-    void getFinalDecisionsEmptyList()
-    {
+    void getFinalDecisionsEmptyList() {
         Mockito.when(userService.validateUser(3)).thenReturn(true);
         Mockito.when(reviewService.findAllPapersByReviewerId(3)).thenReturn(List.of());
         assertThat(paperService.getFinalDecisionsOfPapersForReviewer(3)).isEqualTo(List.of());
     }
 
     @Test
-    void getFinalDecisionsOnePaper()
-    {
+    void getFinalDecisionsOnePaper() {
         Paper goodPaper1 = buildPaper(1, List.of(1), Paper.FinalVerdictEnum.ACCEPTED);
         Mockito.when(userService.validateUser(3)).thenReturn(true);
         Mockito.when(reviewService.findAllPapersByReviewerId(3)).thenReturn(List.of(1));
         Mockito.when(paperRepository.findById(1)).thenReturn(Optional.of(goodPaper1));
         List<Paper> ans = paperService.getFinalDecisionsOfPapersForReviewer(3);
         assertThat(ans.size()).isEqualTo(1);
-        Paper ansPaper1 = buildPaper(1,null, Paper.FinalVerdictEnum.ACCEPTED);
+        Paper ansPaper1 = buildPaper(1, null, Paper.FinalVerdictEnum.ACCEPTED);
         assertThat(ans.get(0)).isEqualTo(ansPaper1);
     }
 
     @Test
-    void getFinalDecisionTwoPapers()
-    {
+    void getFinalDecisionTwoPapers() {
         Paper goodPaper1 = buildPaper(1, List.of(1), Paper.FinalVerdictEnum.ACCEPTED);
         Paper goodPaper2 = buildPaper(2, List.of(1), Paper.FinalVerdictEnum.REJECTED);
         Mockito.when(userService.validateUser(3)).thenReturn(true);
@@ -173,15 +170,14 @@ class PaperServiceTest {
         Mockito.when(paperRepository.findById(2)).thenReturn(Optional.of(goodPaper2));
         List<Paper> ans = paperService.getFinalDecisionsOfPapersForReviewer(3);
         assertThat(ans.size()).isEqualTo(2);
-        Paper ansPaper1 = buildPaper(1,null, Paper.FinalVerdictEnum.ACCEPTED);
+        Paper ansPaper1 = buildPaper(1, null, Paper.FinalVerdictEnum.ACCEPTED);
         Paper ansPaper2 = buildPaper(2, null, Paper.FinalVerdictEnum.REJECTED);
         assertThat(ans.get(0)).isEqualTo(ansPaper1);
         assertThat(ans.get(1)).isEqualTo(ansPaper2);
     }
 
     @Test
-    void onePaperNotFound()
-    {
+    void onePaperNotFound() {
         Paper goodPaper1 = buildPaper(1, List.of(1), Paper.FinalVerdictEnum.ACCEPTED);
         Mockito.when(userService.validateUser(3)).thenReturn(true);
         Mockito.when(reviewService.findAllPapersByReviewerId(3)).thenReturn(List.of(1, 2));
@@ -189,7 +185,7 @@ class PaperServiceTest {
         Mockito.when(paperRepository.findById(2)).thenReturn(Optional.empty());
         List<Paper> ans = paperService.getFinalDecisionsOfPapersForReviewer(3);
         assertThat(ans.size()).isEqualTo(1);
-        Paper ansPaper1 = buildPaper(1,null, Paper.FinalVerdictEnum.ACCEPTED);
+        Paper ansPaper1 = buildPaper(1, null, Paper.FinalVerdictEnum.ACCEPTED);
         assertThat(ans.get(0)).isEqualTo(ansPaper1);;
     }
 }

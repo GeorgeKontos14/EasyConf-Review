@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,14 @@ public class PaperService {
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
 
+    /**
+     * PaperService constructor.
+     *
+     * @param userService UserService reference
+     * @param reviewService ReviewService reference
+     * @param paperRepository PaperRepository reference
+     * @param commentRepository CommentRepository reference
+     */
     public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository, CommentRepository commentRepository) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
@@ -126,17 +135,21 @@ public class PaperService {
      * @return List of Paper objects
      */
     public List<Paper> getFinalDecisionsOfPapersForReviewer(int reviewerId) {
-        if(!userService.validateUser(reviewerId))
+        if (!userService.validateUser(reviewerId))
             return List.of();
         List<Integer> allPaperIdsForReviewer = reviewService.findAllPapersByReviewerId(reviewerId);
         List<Paper> papersForReviewer = new ArrayList<>();
-        for(Integer paperId : allPaperIdsForReviewer){
+        for (Integer paperId : allPaperIdsForReviewer) {
+
             Optional<Paper> retrieved = paperRepository.findById(paperId);
-            if(retrieved.isEmpty())
+            if (retrieved.isEmpty()) {
                 continue;
+            }
+
             Paper abstracted = new Paper();
             abstracted.setId(paperId);
             abstracted.setFinalVerdict(retrieved.get().getFinalVerdict());
+
             papersForReviewer.add(abstracted);
         }
         return papersForReviewer;

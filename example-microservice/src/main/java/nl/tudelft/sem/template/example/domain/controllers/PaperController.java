@@ -283,16 +283,19 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
             @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "preference", required = true) String preference
     ) {
-        if(NullChecks.nullCheck(reviewerId, paperId, preference))
+        if (NullChecks.nullCheck(reviewerId, paperId, preference)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        if(!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
-        && !Objects.equals(preference, "NEUTRAL"))
+        }
+        if (!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
+        && !Objects.equals(preference, "NEUTRAL")) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
-        if(!userService.validateUser(reviewerId))
+        if (!userService.validateUser(reviewerId)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         boolean doesPaperExist = paperService.isExistingPaper(paperId);
-        if(!doesPaperExist)
+        if (!doesPaperExist)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
@@ -300,8 +303,9 @@ public class PaperController implements PaperApi {
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
-        if(saved == null)
+        if (saved == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         return new ResponseEntity<>(HttpStatus.OK);
 
