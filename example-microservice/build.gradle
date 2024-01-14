@@ -20,6 +20,8 @@ plugins {
 	// Code style
 	id 'checkstyle'
 
+	// PMD
+	id 'pmd'
 
 	// PITest
 	id 'info.solidsoft.pitest' version '1.5.2'
@@ -155,8 +157,29 @@ checkstyle {
 		excludes = ['**/generated/.*']
 	}
 }
- 
 
+
+pmd {
+	incrementalAnalysis = true
+	ignoreFailures = true
+	// Exclude specific rules or files/directories
+	pmdMain {
+		source = project.sourceSets.main.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
+
+	pmdTest {
+		source = project.sourceSets.test.allJava.filter { file ->
+			// Exclude directories or files associated with generated code
+			!file.path.contains('generated') // Example condition, modify as per your generated code path
+		}
+		excludes = ['**/generated/.*']
+	}
+
+}
 
 apply plugin: 'info.solidsoft.pitest'
 pitest {
