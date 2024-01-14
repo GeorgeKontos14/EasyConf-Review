@@ -4,21 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import nl.tudelft.sem.template.api.PaperApi;
+import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
@@ -32,8 +32,8 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 public class PaperController implements PaperApi {
 
-    private final UserService userService;
-    private final PaperService paperService;
+    private UserService userService;
+    private PaperService paperService;
     private final ReviewerPreferencesService reviewerPreferencesService;
     private final ReviewService reviewService;
 
@@ -127,9 +127,8 @@ public class PaperController implements PaperApi {
 
     /**
      * endpoint for getting title and abstract
-     *
      * @param paperID The ID of the paper we want to view the title and abstract (required)
-     * @param userID  The ID of the user, used for authorization (required)
+     * @param userID The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
     @Override
@@ -258,4 +257,44 @@ public class PaperController implements PaperApi {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * endpoint that saves the provided preference a reviewer has over a paper
+     * @param reviewerId The id of the reviewer (required)
+     * @param paperId The id of the paper (required)
+     * @param preference The preference score (required)
+     * @return
+     * BAD_REQUEST if input data is wrong
+     * NOT_FOUND if there is no user/paper with given ids
+     * INTERNAL_SERVER_ERROR if something went wrong
+     * OK if successful
+     */
+
+    public ResponseEntity<Void> paperPostPreferenceScorePost(
+            @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
+            @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
+            @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "preference", required = true) String preference
+    ) {
+        if(reviewerId == null || paperId == null || preference == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
+        && !Objects.equals(preference, "NEUTRAL"))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        if(!userService.validateUser(reviewerId))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        boolean doesPaperExist = paperService.isExistingPaper(paperId);
+        if(!doesPaperExist)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        PreferenceEntity preferenceEntity = new PreferenceEntity(
+                reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
+        );
+        PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
+
+        if(saved == null)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
 }
