@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import nl.tudelft.sem.template.api.PaperApi;
+import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -259,7 +257,17 @@ public class PaperController implements PaperApi {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    }
+    /**
+     * endpoint that saves the provided preference a reviewer has over a paper
+     * @param reviewerId The id of the reviewer (required)
+     * @param paperId The id of the paper (required)
+     * @param preference The preference score (required)
+     * @return
+     * BAD_REQUEST if input data is wrong
+     * NOT_FOUND if there is no user/paper with given ids
+     * INTERNAL_SERVER_ERROR if something went wrong
+     * OK if successful
+     */
 
     public ResponseEntity<Void> paperPostPreferenceScorePost(
             @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
@@ -268,21 +276,20 @@ public class PaperController implements PaperApi {
     ) {
         if(reviewerId == null || paperId == null || preference == null)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        if(!Objects.equals(preference, "Can review") || !Objects.equals(preference, "Cannot review")
-        || !Objects.equals(preference, "Neutral"))
+        if(!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
+        && !Objects.equals(preference, "NEUTRAL"))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         if(!userService.validateUser(reviewerId))
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        boolean doesPaperExist = paperService.doesPaperWithIdExist(paperId);
+        boolean doesPaperExist = paperService.isExistingPaper(paperId);
         if(!doesPaperExist)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        ReviewerPreferences reviewerPreference = new ReviewerPreferences();
 
-        reviewerPreference.setPaperId(paperId);
-        reviewerPreference.setReviewerId(reviewerId);
-        reviewerPreference.setReviewerPreference(ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference));
-        ReviewerPreferences saved = reviewService.saveReviewerPreference(reviewerPreference);
+        PreferenceEntity preferenceEntity = new PreferenceEntity(
+                reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
+        );
+        PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
         if(saved == null)
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

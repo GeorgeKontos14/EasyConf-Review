@@ -91,7 +91,4 @@ public class PaperService {
         return paperRepository.findAllById(paperIds);
     }
 
-    public boolean doesPaperWithIdExist(Integer paperId) {
-        return paperRepository.existsById(paperId);
-    }
 }
