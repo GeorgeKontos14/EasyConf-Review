@@ -9,6 +9,7 @@ import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.controllers.PaperController;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ public class PaperControllerTest {
     private RestTemplate restTemplate;
     private PaperService paperService;
     private UserService userService;
+    private ReviewService reviewService;
 
     private PaperController paperController;
 
@@ -42,7 +44,8 @@ public class PaperControllerTest {
         goodPaper = buildPaper(3, List.of(1, 2, 4, 5), null);
         paperService = Mockito.mock(PaperService.class);
         userService = Mockito.mock(UserService.class);
-        paperController = new PaperController(userService, paperService);
+        reviewService = Mockito.mock(ReviewService.class);
+        paperController = new PaperController(userService, paperService, reviewService);
     }
 
     @Test

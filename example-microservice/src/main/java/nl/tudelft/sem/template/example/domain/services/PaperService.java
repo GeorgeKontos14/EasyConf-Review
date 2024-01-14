@@ -46,4 +46,7 @@ public class PaperService {
         return Optional.of(result.getBody());
     }
 
+    public boolean doesPaperWithIdExist(Integer paperId) {
+        return paperRepository.existsById(paperId);
+    }
 }

@@ -4,17 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
+import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.model.Paper;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,11 +26,13 @@ public class PaperController implements PaperApi {
 
     private UserService userService;
     private PaperService paperService;
+    private ReviewService reviewService;
 
 
-    PaperController(UserService userService, PaperService paperService) {
+    PaperController(UserService userService, PaperService paperService, ReviewService reviewService) {
         this.userService = userService;
         this.paperService = paperService;
+        this.reviewService = reviewService;
     }
 
     @Override
@@ -106,5 +107,35 @@ public class PaperController implements PaperApi {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public ResponseEntity<Void> paperPostPreferenceScorePost(
+            @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
+            @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
+            @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "preference", required = true) String preference
+    ) {
+        if(reviewerId == null || paperId == null || preference == null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(!Objects.equals(preference, "Can review") || !Objects.equals(preference, "Cannot review")
+        || !Objects.equals(preference, "Neutral"))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        if(!userService.validateUser(reviewerId))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        boolean doesPaperExist = paperService.doesPaperWithIdExist(paperId);
+        if(!doesPaperExist)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        ReviewerPreferences reviewerPreference = new ReviewerPreferences();
+
+        reviewerPreference.setPaperId(paperId);
+        reviewerPreference.setReviewerId(reviewerId);
+        reviewerPreference.setReviewerPreference(ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference));
+        ReviewerPreferences saved = reviewService.saveReviewerPreference(reviewerPreference);
+
+        if(saved == null)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
     }
 }

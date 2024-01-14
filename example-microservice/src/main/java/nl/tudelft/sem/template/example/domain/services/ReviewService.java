@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import javassist.bytecode.LineNumberAttribute;
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
@@ -14,6 +15,7 @@ public class ReviewService {
 
     private transient final ReviewRepository reviewRepository;
     private transient final PcChairRepository pcChairRepository;
+
 
     /**
      *  Constructor for the Review Service
@@ -155,5 +157,8 @@ public class ReviewService {
     }
 
 
+    public ReviewerPreferences saveReviewerPreference(ReviewerPreferences reviewerPreference) {
+        return null;
+    }
 }
 
