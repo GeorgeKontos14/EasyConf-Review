@@ -130,8 +130,8 @@ public class PaperController implements PaperApi {
     /**
      * endpoint for getting title and abstract.
      *
-     * @param paperID The ID of the paper we want to view the title and abstract (required)
-     * @param userID The ID of the user, used for authorization (required)
+     * @param paperId The ID of the paper we want to view the title and abstract (required)
+     * @param userId The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
     @Override
@@ -286,8 +286,8 @@ public class PaperController implements PaperApi {
         if (NullChecks.nullCheck(reviewerId, paperId, preference)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
-        && !Objects.equals(preference, "NEUTRAL")) {
+        if (!Objects.equals(preference, "Can review") && !Objects.equals(preference, "Cannot review")
+        && !Objects.equals(preference, "Neutral")) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -299,7 +299,7 @@ public class PaperController implements PaperApi {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
-                reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
+                reviewerId, paperId, PreferenceEntity.changeStringToEnumValue(preference)
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
