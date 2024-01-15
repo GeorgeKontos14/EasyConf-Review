@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import nl.tudelft.sem.template.example.domain.Validator.ChainManager;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
+import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -41,6 +44,7 @@ public class PaperControllerTest {
     private ReviewerPreferencesService reviewerPreferencesService;
     private ReviewService reviewService;
     private PaperController paperController;
+    private ChainManager chainManager;
 
     private Paper goodPaper;
 
@@ -76,7 +80,8 @@ public class PaperControllerTest {
         userService = Mockito.mock(UserService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
         reviewService = Mockito.mock(ReviewService.class);
-        paperController = new PaperController(userService, paperService, reviewerPreferencesService, reviewService);
+        chainManager = new ChainManager(userService, paperService);
+        paperController = new PaperController(userService, paperService, reviewerPreferencesService, reviewService, chainManager);
         NullChecks nullChecks = new NullChecks();
     }
 
@@ -275,6 +280,7 @@ public class PaperControllerTest {
 
     @Test
     void paperUpdatePaperStatusPutTest() {
+        Mockito.when(userService.validateUser(anyInt())).thenReturn(true);
         Mockito.when(paperService.isExistingPaper(5)).thenReturn(true);
         Mockito.when(paperService.isExistingPaper(6)).thenReturn(true);
         Mockito.when(paperService.paperUpdatePaperStatusPut(5, null)).thenReturn(true);
@@ -299,15 +305,15 @@ public class PaperControllerTest {
     @Test
     void paperUpdatePaperStatusPutTest2() {
         assertThat(paperController.paperUpdatePaperStatusPut(null, "", 1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         assertThat(paperController.paperUpdatePaperStatusPut(1, "", null))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         assertThat(paperController.paperUpdatePaperStatusPut(-1, "", 1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         assertThat(paperController.paperUpdatePaperStatusPut(1, "", -1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         assertThat(paperController.paperUpdatePaperStatusPut(1, null, 1))
-                .isEqualTo(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+                .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
 
         when(paperService.isExistingPaper(3)).thenReturn(false);
         assertThat(paperController.paperUpdatePaperStatusPut(3, "", 1))

@@ -8,6 +8,8 @@ public class CheckSubjectBuilder {
     private Integer userId;
     private List<Integer> paperIds;
     private List<Integer> reviewIds;
+    private String enumString;
+    private List<String> acceptedEnumStrings;
     public void setInputParameters(List<Object> inputParameters) {
         this.inputParameters = inputParameters;
     }
@@ -26,6 +28,14 @@ public class CheckSubjectBuilder {
 
     public CheckSubject build()
     {
-        return new CheckSubject(inputParameters, userId, paperIds, reviewIds);
+        return new CheckSubject(inputParameters, userId, paperIds, reviewIds, enumString, acceptedEnumStrings);
+    }
+
+    public void setEnumValue(String status) {
+        this.enumString = status;
+    }
+
+    public void setGoodEnumValues(List<String> acceptedEnumStrings) {
+        this.acceptedEnumStrings = acceptedEnumStrings;
     }
 }

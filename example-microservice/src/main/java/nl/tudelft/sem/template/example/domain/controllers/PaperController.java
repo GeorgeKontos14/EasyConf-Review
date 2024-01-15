@@ -3,14 +3,15 @@ package nl.tudelft.sem.template.example.domain.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
+import nl.tudelft.sem.template.example.domain.Builder.CheckSubject;
+import nl.tudelft.sem.template.example.domain.Builder.CheckSubjectBuilder;
+import nl.tudelft.sem.template.example.domain.Validator.ChainManager;
+import nl.tudelft.sem.template.example.domain.Validator.Validator;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
@@ -21,6 +22,8 @@ import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import nl.tudelft.sem.template.model.Review;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,12 +39,15 @@ public class PaperController implements PaperApi {
     private final ReviewerPreferencesService reviewerPreferencesService;
     private final ReviewService reviewService;
 
+    private final ChainManager chainManager;
+
     PaperController(UserService userService, PaperService paperService,
-                    ReviewerPreferencesService reviewerPreferencesService, ReviewService reviewService) {
+                    ReviewerPreferencesService reviewerPreferencesService, ReviewService reviewService, ChainManager chainManager) {
         this.userService = userService;
         this.paperService = paperService;
         this.reviewerPreferencesService = reviewerPreferencesService;
         this.reviewService = reviewService;
+        this.chainManager = chainManager;
     }
 
     /**
@@ -245,18 +251,21 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (status == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        if (!paperService.isExistingPaper(paperId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        if (!(status.equals("Unresolved") || status.equals("Accepted") || status.equals("Rejected"))) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId, status)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Arrays.asList(paperId)));
+        builder.setEnumValue(status);
+        builder.setGoodEnumValues(List.of("Unresolved", "Accepted", "Rejected"));
+
+        CheckSubject checkSubject = builder.build();
+
+        Validator chainStart = chainManager.createChain();
+        ResponseEntity<Void> responseStatus = chainStart.handle(checkSubject);
+
+        if(responseStatus.getStatusCode()!=HttpStatus.OK)
+            return responseStatus;
 
         boolean success = paperService.paperUpdatePaperStatusPut(paperId, status);
         if (!success) {
