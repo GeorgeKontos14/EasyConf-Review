@@ -130,8 +130,8 @@ public class PaperController implements PaperApi {
     /**
      * endpoint for getting title and abstract.
      *
-     * @param paperID The ID of the paper we want to view the title and abstract (required)
-     * @param userID The ID of the user, used for authorization (required)
+     * @param paperId The ID of the paper we want to view the title and abstract (required)
+     * @param userId The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
     @Override
