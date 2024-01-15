@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.domain.controllers;
+package nl.tudelft.sem.template.example.domain.util;
 
 import java.util.List;
 import nl.tudelft.sem.template.model.Review;

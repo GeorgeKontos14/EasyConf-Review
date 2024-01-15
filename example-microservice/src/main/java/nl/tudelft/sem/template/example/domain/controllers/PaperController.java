@@ -23,6 +23,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.example.domain.validator.ChainManager;
+import nl.tudelft.sem.template.example.domain.util.NullChecks;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -173,7 +174,7 @@ public class PaperController implements PaperApi {
         if (validatorStatus != null) {
             return validatorStatus;
         }
-            
+
 
         Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperId, new RestTemplate());
         if (foundPaper.isEmpty()) {
@@ -300,10 +301,9 @@ public class PaperController implements PaperApi {
      * endpoint that saves the provided preference a reviewer has over a paper.
      *
      * @param reviewerId The id of the reviewer (required)
-     * @param paperId The id of the paper (required)
+     * @param paperId    The id of the paper (required)
      * @param preference The preference score (required)
-     * @return
-     * BAD_REQUEST if input data is wrong
+     * @return BAD_REQUEST if input data is wrong
      * NOT_FOUND if there is no user/paper with given ids
      * INTERNAL_SERVER_ERROR if something went wrong
      * OK if successful

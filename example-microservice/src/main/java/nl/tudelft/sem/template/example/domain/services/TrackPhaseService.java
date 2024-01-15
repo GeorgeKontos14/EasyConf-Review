@@ -33,9 +33,9 @@ public class TrackPhaseService {
      */
     public Optional<List<Integer>> getTrackPapers(int trackId, RestTemplate restTemplate) {
         String submissionsUri = "localhost:8082/tracks/" + trackId + "/submissions";
-        IntegerList response;
+        TrackPhaseService.IntegerList response;
         try {
-            response = restTemplate.getForObject(submissionsUri, IntegerList.class);
+            response = restTemplate.getForObject(submissionsUri, TrackPhaseService.IntegerList.class);
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -46,7 +46,7 @@ public class TrackPhaseService {
     }
 
     //Had to create this class to make the response work.
-    static class IntegerList {
+    public static class IntegerList {
         List<Integer> ints;
 
         public IntegerList(List<Integer> list) {

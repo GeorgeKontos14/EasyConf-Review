@@ -5,8 +5,8 @@ package nl.tudelft.sem.template.example.domain.phases;
  */
 public class ReviewFinished {
     private final int reviewId;
-    public ReviewFinished(int reviewId)
-    {
+
+    public ReviewFinished(int reviewId) {
         this.reviewId = reviewId;
     }
 }
