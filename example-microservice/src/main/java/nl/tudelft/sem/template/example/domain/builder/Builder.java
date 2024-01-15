@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.domain.Builder;
+package nl.tudelft.sem.template.example.domain.builder;
 
 import java.util.List;
 

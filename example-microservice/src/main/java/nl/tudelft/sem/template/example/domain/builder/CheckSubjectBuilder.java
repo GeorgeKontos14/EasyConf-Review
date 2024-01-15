@@ -1,4 +1,4 @@
-package nl.tudelft.sem.template.example.domain.Builder;
+package nl.tudelft.sem.template.example.domain.builder;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ public class CheckSubjectBuilder {
     private List<Integer> reviewIds;
     private String enumString;
     private List<String> acceptedEnumStrings;
+
     public void setInputParameters(List<Object> inputParameters) {
         this.inputParameters = inputParameters;
     }
@@ -26,8 +27,7 @@ public class CheckSubjectBuilder {
         this.reviewIds = reviewIds;
     }
 
-    public CheckSubject build()
-    {
+    public CheckSubject build() {
         return new CheckSubject(inputParameters, userId, paperIds, reviewIds, enumString, acceptedEnumStrings);
     }
 
