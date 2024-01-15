@@ -322,7 +322,7 @@ public class PaperController implements PaperApi {
         builder.setInputParameters(new ArrayList<>(Arrays.asList(reviewerId, paperId, preference)));
         builder.setUserId(reviewerId);
         builder.setEnumValue(preference);
-        builder.setGoodEnumValues(List.of("CAN_REVIEW", "CANNOT_REVIEW", "NEUTRAL"));
+        builder.setGoodEnumValues(List.of("Can review", "Cannot review", "Neutral"));
         builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
 
         CheckSubject checkSubject = builder.build();
@@ -333,7 +333,7 @@ public class PaperController implements PaperApi {
         }
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
-                reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
+                reviewerId, paperId, PreferenceEntity.changeStringToEnumValue(preference)
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
