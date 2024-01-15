@@ -290,7 +290,7 @@ public class PaperController implements PaperApi {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!Objects.equals(preference, "Can review") && !Objects.equals(preference, "Cannot review")
-        && !Objects.equals(preference, "Neutral")) {
+            && !Objects.equals(preference, "Neutral")) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 

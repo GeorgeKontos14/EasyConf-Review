@@ -31,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.web.client.RestTemplate;
 
-import javax.swing.text.html.parser.Entity;
 
 
 public class PaperControllerTest {

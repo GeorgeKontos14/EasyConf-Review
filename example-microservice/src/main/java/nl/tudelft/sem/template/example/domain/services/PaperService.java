@@ -34,7 +34,8 @@ public class PaperService {
      * @param paperRepository PaperRepository reference
      * @param commentRepository CommentRepository reference
      */
-    public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository, CommentRepository commentRepository) {
+    public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository,
+                        CommentRepository commentRepository) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
         this.userService = userService;
@@ -135,8 +136,9 @@ public class PaperService {
      * @return List of Paper objects
      */
     public List<Paper> getFinalDecisionsOfPapersForReviewer(int reviewerId) {
-        if (!userService.validateUser(reviewerId))
+        if (!userService.validateUser(reviewerId)) {
             return List.of();
+        }
         List<Integer> allPaperIdsForReviewer = reviewService.findAllPapersByReviewerId(reviewerId);
         List<Paper> papersForReviewer = new ArrayList<>();
         for (Integer paperId : allPaperIdsForReviewer) {

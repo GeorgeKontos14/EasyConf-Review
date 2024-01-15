@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.models;
 
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -9,7 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 
-import java.util.Objects;
 
 @Setter
 @Getter
@@ -45,18 +45,19 @@ public class PreferenceEntity {
     }
 
     /**
-     * Changes the String description of an Enum value to the value itself
+     * Changes the String description of an Enum value to the value itself.
+     *
      * @param preference - the String with the enum description
      * @return corresponding ReviewerPreferences.ReviewerPreferenceEnum value
      */
     public static ReviewerPreferences.ReviewerPreferenceEnum changeStringToEnumValue(String preference) {
         if (Objects.equals(preference, "Can review")) {
             return ReviewerPreferences.ReviewerPreferenceEnum.CAN_REVIEW;
-        }
-        else if (Objects.equals(preference, "Cannot review")) {
+        } else if (Objects.equals(preference, "Cannot review")) {
             return ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW;
+        } else {
+            return ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL;
         }
-        else return ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL;
     }
 
     /**
