@@ -1,12 +1,10 @@
-package nl.tudelft.sem.template.example.domain.Validator;
+package nl.tudelft.sem.template.example.domain.validator;
 
-import nl.tudelft.sem.template.example.domain.Builder.CheckSubject;
-import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
-import nl.tudelft.sem.template.model.Paper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -29,5 +27,17 @@ public class ChainManager {
         DatabaseObjectValidator databaseObjectValidator = new DatabaseObjectValidator(paperService);
         userValidator.setNext(databaseObjectValidator);
         return parameterValidator;
+    }
+
+    public  <T> ResponseEntity<T> evaluate(CheckSubject checkSubject) {
+        Validator firstValidator = createChain();
+        try{
+            boolean httpStatus = firstValidator.handle(checkSubject);
+        } catch (ValidatorException ve) {
+            return new ResponseEntity<>(ve.getHttpStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return null;
     }
 }

@@ -1,23 +1,21 @@
-package nl.tudelft.sem.template.example.domain.Validator;
+package nl.tudelft.sem.template.example.domain.validator;
 
-import nl.tudelft.sem.template.example.domain.Builder.CheckSubject;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
 import nl.tudelft.sem.template.example.domain.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 public class UserValidator extends BaseValidator{
-    private UserService userService;
+    private final UserService userService;
 
     UserValidator(UserService userService)
     {
         this.userService = userService;
     }
     @Override
-    public ResponseEntity<Void> handle(CheckSubject checkSubject) {
+    public boolean handle(CheckSubject checkSubject) throws ValidatorException{
         boolean isUserValid = userService.validateUser(checkSubject.getUserId());
         if(!isUserValid)
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            throw new ValidatorException(HttpStatus.UNAUTHORIZED);
         return super.checkNext(checkSubject);
     }
 }
