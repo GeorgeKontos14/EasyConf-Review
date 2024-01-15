@@ -4,26 +4,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.PaperApi;
-import nl.tudelft.sem.template.example.domain.Builder.CheckSubject;
-import nl.tudelft.sem.template.example.domain.Builder.CheckSubjectBuilder;
-import nl.tudelft.sem.template.example.domain.Validator.ChainManager;
-import nl.tudelft.sem.template.example.domain.Validator.Validator;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubjectBuilder;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
-import nl.tudelft.sem.template.model.ReviewerPreferences;
 import nl.tudelft.sem.template.model.Review;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,7 +45,8 @@ public class PaperController implements PaperApi {
     private final ChainManager chainManager;
 
     PaperController(UserService userService, PaperService paperService,
-                    ReviewerPreferencesService reviewerPreferencesService, ReviewService reviewService, ChainManager chainManager) {
+                    ReviewerPreferencesService reviewerPreferencesService,
+                    ReviewService reviewService, ChainManager chainManager) {
         this.userService = userService;
         this.paperService = paperService;
         this.reviewerPreferencesService = reviewerPreferencesService;
@@ -64,12 +68,17 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Review>> paperGetPaperReviewsGet(Integer paperId, Integer userId) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<Review>> validatorStatus = chainManager.evaluate(checkSubject);
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
-        if (!userService.validateUser(userId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         return new ResponseEntity<>(reviewService.findAllReviewsByPaperId(paperId), HttpStatus.OK);
     }
 
@@ -82,23 +91,23 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userId") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        try {
-            boolean isUserValid = userService.validateUser(userId);
-            if (!isUserValid) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
 
-            Optional<Paper> foundPaper = paperService.getPaperObjectWithId(paperId);
-            return foundPaper.map(paper -> new ResponseEntity<>(List.of(paper), HttpStatus.OK))
-                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        CheckSubjectBuilder builder  = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<Paper>> validatorStatus = chainManager.evaluate(checkSubject);
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
+
+        Optional<Paper> foundPaper = paperService.getPaperObjectWithId(paperId);
+        if (foundPaper.isEmpty()) {
+            throw new RuntimeException("foundPaper should not be empty at this point due to Validator chain");
+        }
+        return new ResponseEntity<>(List.of(foundPaper.get()), HttpStatus.OK);
     }
 
     /**
@@ -120,16 +129,19 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<Comment>> validatorStatus = chainManager.evaluate(checkSubject);
+
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
-        if (!userService.validateUser(userId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         List<Comment> comments = paperService.paperGetPaperCommentsGet(paperId);
-        if (comments.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
@@ -149,33 +161,37 @@ public class PaperController implements PaperApi {
                     required = true, in = ParameterIn.QUERY)
             @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<String> validatorStatus = chainManager.evaluate(checkSubject);
+
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
+            
+
+        Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperId, new RestTemplate());
+        if (foundPaper.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("title", foundPaper.get().getTitle());
+        responseMap.put("abstract", foundPaper.get().getAbstract());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String response = null;
         try {
-            boolean isUserValid = userService.validateUser(userId);
-            if (!isUserValid) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
-
-            Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperId, new RestTemplate());
-            if (foundPaper.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("title", foundPaper.get().getTitle());
-            responseMap.put("abstract", foundPaper.get().getAbstract());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String response = objectMapper.writeValueAsString(responseMap);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
+            response = objectMapper.writeValueAsString(responseMap);
         } catch (Exception e) {
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
+        return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
 
@@ -194,19 +210,21 @@ public class PaperController implements PaperApi {
     public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
             "The ID of the paper we want to see the reviewer preferences for", required = true,
             in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
-        if (NullChecks.nullCheck(reviewerId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Collections.singletonList(reviewerId)));
+        builder.setUserId(reviewerId);
+        if (reviewerId != null) {
+            builder.setPaperIds(reviewService.findAllPapersByReviewerId(reviewerId));
         }
-        if (!userService.validateUser(reviewerId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<Paper>> validatorStatus = chainManager.evaluate(checkSubject);
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
+
         List<Paper> papers = paperService.findAllPapersForIdList(reviewService.findAllPapersByReviewerId(reviewerId));
-        if (papers == null) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (papers.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(papers, HttpStatus.OK);
     }
 
@@ -218,13 +236,17 @@ public class PaperController implements PaperApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<ReviewerPreferences>> validatorStatus = chainManager.evaluate(checkSubject);
+        if (validatorStatus != null) {
+            return validatorStatus;
         }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         List<ReviewerPreferences> prefs = reviewerPreferencesService.getPreferencesForPaper(paperId);
         return new ResponseEntity<>(prefs, HttpStatus.ACCEPTED);
     }
@@ -255,17 +277,17 @@ public class PaperController implements PaperApi {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId, status)));
         builder.setUserId(userId);
-        builder.setPaperIds(new ArrayList<>(Arrays.asList(paperId)));
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
         builder.setEnumValue(status);
         builder.setGoodEnumValues(List.of("Unresolved", "Accepted", "Rejected"));
 
         CheckSubject checkSubject = builder.build();
 
-        Validator chainStart = chainManager.createChain();
-        ResponseEntity<Void> responseStatus = chainStart.handle(checkSubject);
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
 
-        if(responseStatus.getStatusCode()!=HttpStatus.OK)
+        if (responseStatus != null) {
             return responseStatus;
+        }
 
         boolean success = paperService.paperUpdatePaperStatusPut(paperId, status);
         if (!success) {
@@ -288,29 +310,36 @@ public class PaperController implements PaperApi {
      */
 
     public ResponseEntity<Void> paperPostPreferenceScorePost(
-            @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
-            @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
-            @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "preference", required = true) String preference
+            @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY)
+                @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
+            @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY)
+                @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
+            @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY)
+                @Valid @RequestParam(value = "preference", required = true) String preference
     ) {
-        if(NullChecks.nullCheck(reviewerId, paperId, preference))
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        if(!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
-        && !Objects.equals(preference, "NEUTRAL"))
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        if(!userService.validateUser(reviewerId))
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        boolean doesPaperExist = paperService.isExistingPaper(paperId);
-        if(!doesPaperExist)
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(reviewerId, paperId, preference)));
+        builder.setUserId(reviewerId);
+        builder.setEnumValue(preference);
+        builder.setGoodEnumValues(List.of("CAN_REVIEW", "CANNOT_REVIEW", "NEUTRAL"));
+        builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
+        }
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
                 reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
-        if(saved == null)
+        if (saved == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         return new ResponseEntity<>(HttpStatus.OK);
 
