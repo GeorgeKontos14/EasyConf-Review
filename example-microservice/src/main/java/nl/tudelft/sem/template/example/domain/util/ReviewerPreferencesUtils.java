@@ -6,7 +6,7 @@ import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 
 
-public class RevPreftils {
+public class ReviewerPreferencesUtils {
 
     /**
      * Converts a list of Preference Entities to ReviewerPreferences objects.

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-public class RevPrefsUtilsTest {
+public class ReviewerPreferencesUtilsTest {
 
     private List<ReviewerPreferences> preferences;
     private List<PreferenceEntity> entities;
@@ -40,7 +40,7 @@ public class RevPrefsUtilsTest {
 
     @Test
     public void convertTest() {
-        assertThat(RevPreftils.convert(entities)).isEqualTo(preferences);
+        assertThat(ReviewerPreferencesUtils.convert(entities)).isEqualTo(preferences);
     }
 
 }
