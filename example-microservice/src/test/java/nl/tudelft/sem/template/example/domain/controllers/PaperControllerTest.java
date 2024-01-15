@@ -17,20 +17,17 @@ import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.util.NullChecks;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.web.client.RestTemplate;
-
-import javax.swing.text.html.parser.Entity;
 
 
 public class PaperControllerTest {
@@ -333,7 +330,7 @@ public class PaperControllerTest {
 
         when(userService.validateUser(anyInt())).thenReturn(true);
         when(reviewService.findAllPapersByReviewerId(2))
-                        .thenReturn(List.of(5));
+                .thenReturn(List.of(5));
         when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(null);
         assertThat(paperController.paperGetAllPapersForIDGet(2))
@@ -349,13 +346,13 @@ public class PaperControllerTest {
     }
 
     @Test
-    public void paperGetAllPapersForIDGetTest() {
+    public void paperGetAllPapersForIdGetTest() {
         when(userService.validateUser(anyInt())).thenReturn(true);
 
         Paper p = new Paper();
         p.id(5);
         when(reviewService.findAllPapersByReviewerId(1))
-                        .thenReturn(List.of(5));
+                .thenReturn(List.of(5));
         when(paperService.findAllPapersForIdList(List.of(5)))
                 .thenReturn(List.of(p));
         assertThat(paperController.paperGetAllPapersForIDGet(1))
@@ -389,7 +386,7 @@ public class PaperControllerTest {
 
     @Test
     void paperPostPreferenceScorePostBadRequest() {
-        assertThat(paperController.paperPostPreferenceScorePost(null,2,"Neutral"))
+        assertThat(paperController.paperPostPreferenceScorePost(null, 2, "Neutral"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
     }
 
@@ -400,35 +397,32 @@ public class PaperControllerTest {
     }
 
     @Test
-    void paperPostPreferenceScoreNotFoundUser()
-    {
+    void paperPostPreferenceScoreNotFoundUser() {
         when(userService.validateUser(3)).thenReturn(false);
-        assertThat(paperController.paperPostPreferenceScorePost(3,2,"NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Test
-    void paperPostPreferenceScoreNotFoundPaper()
-    {
+    void paperPostPreferenceScoreNotFoundPaper() {
         when(userService.validateUser(3)).thenReturn(true);
         when(paperService.isExistingPaper(2)).thenReturn(false);
-        assertThat(paperController.paperPostPreferenceScorePost(3,2,"NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Test
-    void paperPostPreferenceScoreOk()
-    {
+    void paperPostPreferenceScoreOk() {
         when(userService.validateUser(3)).thenReturn(true);
         when(paperService.isExistingPaper(2)).thenReturn(true);
-        PreferenceEntity good = new PreferenceEntity(2,3, ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL);
+        PreferenceEntity good = new PreferenceEntity(2, 3, ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL);
         when(reviewerPreferencesService.saveReviewerPreference(any())).thenReturn(good);
 
-        assertThat(paperController.paperPostPreferenceScorePost(3,2,"NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
         verify(reviewerPreferencesService, times(1)).saveReviewerPreference(any());
         when(reviewerPreferencesService.saveReviewerPreference(any())).thenReturn(null);
-        assertThat(paperController.paperPostPreferenceScorePost(3,2,"NEUTRAL").getStatusCode())
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL").getStatusCode())
                 .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

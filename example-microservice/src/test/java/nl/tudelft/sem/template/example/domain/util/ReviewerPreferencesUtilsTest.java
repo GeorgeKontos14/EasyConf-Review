@@ -1,21 +1,16 @@
-package nl.tudelft.sem.template.example.domain.services;
+package nl.tudelft.sem.template.example.domain.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewerPreferencesRepository;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-public class ReviewerPreferencesServiceTest {
 
-    private ReviewerPreferencesRepository repo;
-
-    private ReviewerPreferencesService sut;
+public class ReviewerPreferencesUtilsTest {
 
     private List<ReviewerPreferences> preferences;
     private List<PreferenceEntity> entities;
@@ -25,8 +20,6 @@ public class ReviewerPreferencesServiceTest {
      */
     @BeforeEach
     public void setup() {
-        repo = Mockito.mock(ReviewerPreferencesRepository.class);
-        sut = new ReviewerPreferencesService(repo);
         ReviewerPreferences pref1 = new ReviewerPreferences();
         pref1.reviewerId(1);
         pref1.setPaperId(1);
@@ -46,14 +39,8 @@ public class ReviewerPreferencesServiceTest {
     }
 
     @Test
-    public void getPreferencesForPaperTest() {
-        Mockito.when(repo.findAllByPaperId(1)).thenReturn(entities);
-        assertThat(sut.getPreferencesForPaper(1)).isEqualTo(preferences);
+    public void convertTest() {
+        assertThat(ReviewerPreferencesUtils.convert(entities)).isEqualTo(preferences);
     }
 
-    @Test
-    public void getPreferencesForReviewerTest() {
-        Mockito.when(repo.findAllByReviewerId(1)).thenReturn(entities);
-        assertThat(sut.getPreferencesForReviewer(1)).isEqualTo(preferences);
-    }
 }
