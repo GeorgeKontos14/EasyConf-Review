@@ -10,6 +10,7 @@ public class CheckSubjectBuilder {
     private List<Integer> reviewIds;
     private String enumString;
     private List<String> acceptedEnumStrings;
+    private Integer trackId;
 
     public void setInputParameters(List<Object> inputParameters) {
         this.inputParameters = inputParameters;
@@ -28,7 +29,7 @@ public class CheckSubjectBuilder {
     }
 
     public CheckSubject build() {
-        return new CheckSubject(inputParameters, userId, paperIds, reviewIds, enumString, acceptedEnumStrings);
+        return new CheckSubject(inputParameters, userId, paperIds, reviewIds, enumString, acceptedEnumStrings, trackId);
     }
 
     public void setEnumValue(String status) {
@@ -37,5 +38,9 @@ public class CheckSubjectBuilder {
 
     public void setGoodEnumValues(List<String> acceptedEnumStrings) {
         this.acceptedEnumStrings = acceptedEnumStrings;
+    }
+
+    public void setTrack(Integer trackId) {
+        this.trackId = trackId;
     }
 }

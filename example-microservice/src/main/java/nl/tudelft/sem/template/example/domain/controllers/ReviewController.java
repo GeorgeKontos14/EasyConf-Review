@@ -2,11 +2,13 @@ package nl.tudelft.sem.template.example.domain.controllers;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.ReviewApi;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
+import nl.tudelft.sem.template.example.domain.builder.CheckSubjectBuilder;
 import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -14,6 +16,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesServic
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.example.domain.util.NullChecks;
+import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -37,6 +40,8 @@ public class ReviewController implements ReviewApi {
     private final PaperService paperService;
     private final TrackPhaseService trackPhaseService;
 
+    private final ChainManager chainManager;
+
     /**
      * Constructor for reviewController.
      *
@@ -45,22 +50,33 @@ public class ReviewController implements ReviewApi {
      * @param reviewerPreferencesService to be called on
      * @param paperService to be called on
      * @param trackPhaseService to be called on
+     * @param chainManager chain manager instance
      */
     public ReviewController(UserService userService, ReviewService reviewService,
                             ReviewerPreferencesService reviewerPreferencesService, PaperService paperService,
-                            TrackPhaseService trackPhaseService) {
+                            TrackPhaseService trackPhaseService, ChainManager chainManager) {
         this.userService = userService;
         this.reviewService = reviewService;
         this.reviewerPreferencesService = reviewerPreferencesService;
         this.paperService = paperService;
         this.trackPhaseService = trackPhaseService;
+        this.chainManager = chainManager;
     }
 
     @Override
     public ResponseEntity<Void> reviewStartBiddingForTrackGet(Integer trackId) {
-        if (NullChecks.nullCheck(trackId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Collections.singletonList(trackId)));
+        builder.setTrack(trackId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
+
         Optional<List<Integer>> papersOpt = trackPhaseService
                 .getTrackPapers(trackId, new RestTemplate());
         if (papersOpt.isEmpty()) {
@@ -82,12 +98,15 @@ public class ReviewController implements ReviewApi {
                     in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
                     required = false) List<@Valid Review> reviews
     ) {
-        if (NullChecks.nullCheck(userId, trackId, reviews)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
+        builder.setUserId(userId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
         reviewService.saveReviews(reviews);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -117,13 +136,18 @@ public class ReviewController implements ReviewApi {
             @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
                     in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
                     required = false) List<@Valid Review> reviews) {
-        if (NullChecks.nullCheck(userId, trackId, reviews)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
+        builder.setUserId(userId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         if (!reviewService.verifyPcChair(userId, trackId)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -136,12 +160,15 @@ public class ReviewController implements ReviewApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user the reviews of whom are returned.",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Collections.singletonList(userId)));
+        builder.setUserId(userId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<List<Review>> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
         List<Review> reviews = reviewService.reviewsByReviewer(userId);
         return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
@@ -154,12 +181,15 @@ public class ReviewController implements ReviewApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(paperId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
+        builder.setUserId(userId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<List<Review>> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
         List<Review> reviews = reviewService.reviewsByPaper(paperId);
         return new ResponseEntity<>(reviews, HttpStatus.ACCEPTED);
@@ -173,16 +203,22 @@ public class ReviewController implements ReviewApi {
             @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
                     required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
-        if (NullChecks.nullCheck(reviewId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(reviewId, userId)));
+        builder.setUserId(userId);
+        builder.setReviewIds(new ArrayList<>(Collections.singletonList(reviewId)));
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Paper> responseStatus = chainManager.evaluate(checkSubject);
+
+        if (responseStatus != null) {
+            return responseStatus;
         }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         Optional<Review> review = reviewService.findReviewObjectWithId(reviewId);
         if (review.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new RuntimeException("Review object should not be empty due to checks made in chain.");
         }
         int paperId = review.get().getPaperId();
         Optional<Paper> paper = paperService.getPaperObjectWithId(paperId);
@@ -197,16 +233,20 @@ public class ReviewController implements ReviewApi {
             @Parameter(name = "Review", description = "the review to be updated", required = true)
             @Valid @RequestBody Review review
     ) {
-        if (NullChecks.nullCheck(userId, review)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(userId, review)));
+        builder.setUserId(userId);
+        if (review != null){
+            builder.setReviewIds(new ArrayList<>(Arrays.asList(review.getId())));
         }
-        boolean isUserValid = userService.validateUser(userId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<Review> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
         }
-        if (!reviewService.existsReview(review.getId())) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+
         Review updatedReview = reviewService.saveAndReturnReview(review);
         return new ResponseEntity<>(updatedReview, HttpStatus.OK);
     }
@@ -217,13 +257,16 @@ public class ReviewController implements ReviewApi {
                     "The ID of the reviewer the reviews of whom are returned.", required = true,
                     in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewerID") Integer reviewId
     ) {
-        if (NullChecks.nullCheck(reviewId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Collections.singletonList(reviewId)));
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<List<ReviewerPreferences>> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
         }
-        boolean isUserValid = userService.validateUser(reviewId);
-        if (!isUserValid) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+
         List<ReviewerPreferences> preferences = reviewerPreferencesService.getPreferencesForReviewer(reviewId);
         return new ResponseEntity<>(preferences, HttpStatus.ACCEPTED);
     }
@@ -238,11 +281,14 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<String> reviewGetBiddingDeadlineGet(Integer trackId, Integer userId) {
-        if (NullChecks.nullCheck(trackId, userId)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        if (!userService.validateUser(userId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId)));
+        builder.setUserId(userId);
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<String> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
         }
         Optional<String> deadline = reviewService.getTrackDeadline(trackId, new RestTemplate());
         return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED))
@@ -265,11 +311,14 @@ public class ReviewController implements ReviewApi {
                     required = true) Integer userId,
             @Parameter(name = "Comment", description = "the comment to post", required = true) @RequestBody
             Comment comment) {
-        if (NullChecks.nullCheck(userId, comment)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        if (!userService.validateUser(userId)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(Arrays.asList(userId, comment));
+        builder.setUserId(userId);
+
+        CheckSubject checkSubject = builder.build();
+        ResponseEntity<Comment> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
         }
         Comment c = reviewService.reviewPostCommentPost(comment);
         return new ResponseEntity<>(c, HttpStatus.OK);

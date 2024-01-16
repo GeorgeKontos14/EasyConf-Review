@@ -45,6 +45,10 @@ public class TrackPhaseService {
         return Optional.ofNullable(response.ints);
     }
 
+    public boolean isTrackValid(int trackId) {
+        return trackId >=0;
+    }
+
     //Had to create this class to make the response work.
     public static class IntegerList {
         List<Integer> ints;

@@ -14,6 +14,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -31,6 +32,7 @@ public class ReviewControllerTest {
     private PaperService paperService;
     private ReviewerPreferencesService reviewerPreferencesService;
     private TrackPhaseService trackPhaseService;
+    private ChainManager chainManager;
     private ReviewController sut;
 
     /**
@@ -76,8 +78,9 @@ public class ReviewControllerTest {
         paperService = Mockito.mock(PaperService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
         trackPhaseService = Mockito.mock(TrackPhaseService.class);
+        chainManager = new ChainManager(userService, paperService, reviewService, trackPhaseService);
         sut = new ReviewController(userService, reviewService, reviewerPreferencesService,
-                paperService, trackPhaseService);
+                paperService, trackPhaseService, chainManager);
         Mockito.when(userService.validateUser(1)).thenReturn(true);
         Mockito.when(userService.validateUser(2)).thenReturn(false);
     }

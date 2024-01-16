@@ -1,11 +1,17 @@
 package nl.tudelft.sem.template.example.domain.validator;
 
 import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
+import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
 public class ParameterValidator extends BaseValidator{
+
+    private TrackPhaseService trackPhaseService;
+    ParameterValidator(TrackPhaseService trackPhaseService){
+        this.trackPhaseService = trackPhaseService;
+    }
 
     @Override
     public boolean handle(CheckSubject checkSubject) throws ValidatorException {
@@ -16,6 +22,10 @@ public class ParameterValidator extends BaseValidator{
 
         boolean enumStatus = isEnumStringValid(checkSubject);
         if(!enumStatus)
+            throw new ValidatorException(HttpStatus.BAD_REQUEST);
+
+        boolean trackIdStatus = isTrackIdValid(checkSubject);
+        if(!trackIdStatus)
             throw new ValidatorException(HttpStatus.BAD_REQUEST);
 
         return super.checkNext(checkSubject);
@@ -45,6 +55,12 @@ public class ParameterValidator extends BaseValidator{
                 break;
             }
         return isEnumStringAmongGoodValues;
+    }
 
+    boolean isTrackIdValid(CheckSubject checkSubject) {
+        Integer trackId = checkSubject.getTrackId();
+        if(trackId == null)
+            return true;
+        return trackPhaseService.isTrackValid(trackId);
     }
 }

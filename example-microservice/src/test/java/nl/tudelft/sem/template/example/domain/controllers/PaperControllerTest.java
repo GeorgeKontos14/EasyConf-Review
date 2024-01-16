@@ -13,13 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import nl.tudelft.sem.template.example.domain.services.*;
 import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
-import nl.tudelft.sem.template.example.domain.services.PaperService;
-import nl.tudelft.sem.template.example.domain.services.ReviewService;
-import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
-import nl.tudelft.sem.template.example.domain.services.UserService;
 import nl.tudelft.sem.template.example.domain.util.NullChecks;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
@@ -42,6 +39,8 @@ public class PaperControllerTest {
     private ReviewService reviewService;
     private PaperController paperController;
     private ChainManager chainManager;
+
+    private TrackPhaseService trackPhaseService;
 
     private Paper goodPaper;
 
@@ -77,7 +76,8 @@ public class PaperControllerTest {
         userService = Mockito.mock(UserService.class);
         reviewerPreferencesService = Mockito.mock(ReviewerPreferencesService.class);
         reviewService = Mockito.mock(ReviewService.class);
-        chainManager = new ChainManager(userService, paperService);
+        trackPhaseService = Mockito.mock(TrackPhaseService.class);
+        chainManager = new ChainManager(userService, paperService, reviewService, trackPhaseService);
         paperController = new PaperController(userService, paperService, reviewerPreferencesService, reviewService, chainManager);
         NullChecks nullChecks = new NullChecks();
     }
