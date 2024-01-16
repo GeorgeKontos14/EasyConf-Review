@@ -45,6 +45,7 @@ public class TrackPhaseService {
         return Optional.ofNullable(response.ints);
     }
 
+
     //Had to create this class to make the response work.
     public static class IntegerList {
         List<Integer> ints;
