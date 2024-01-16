@@ -22,12 +22,15 @@ import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import nl.tudelft.sem.template.model.ReviewerPreferences;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.web.client.RestTemplate;
+
 
 
 public class PaperControllerTest {
@@ -399,7 +402,7 @@ public class PaperControllerTest {
     @Test
     void paperPostPreferenceScoreNotFoundUser() {
         when(userService.validateUser(3)).thenReturn(false);
-        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "Neutral"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -407,7 +410,7 @@ public class PaperControllerTest {
     void paperPostPreferenceScoreNotFoundPaper() {
         when(userService.validateUser(3)).thenReturn(true);
         when(paperService.isExistingPaper(2)).thenReturn(false);
-        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "Neutral"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
@@ -418,11 +421,11 @@ public class PaperControllerTest {
         PreferenceEntity good = new PreferenceEntity(2, 3, ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL);
         when(reviewerPreferencesService.saveReviewerPreference(any())).thenReturn(good);
 
-        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL"))
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "Neutral"))
                 .isEqualTo(new ResponseEntity<>(HttpStatus.OK));
         verify(reviewerPreferencesService, times(1)).saveReviewerPreference(any());
         when(reviewerPreferencesService.saveReviewerPreference(any())).thenReturn(null);
-        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "NEUTRAL").getStatusCode())
+        assertThat(paperController.paperPostPreferenceScorePost(3, 2, "Neutral").getStatusCode())
                 .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -289,8 +289,8 @@ public class PaperController implements PaperApi {
         if (NullChecks.nullCheck(reviewerId, paperId, preference)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(preference, "CAN_REVIEW") && !Objects.equals(preference, "CANNOT_REVIEW")
-                && !Objects.equals(preference, "NEUTRAL")) {
+        if (!Objects.equals(preference, "Can review") && !Objects.equals(preference, "Cannot review")
+            && !Objects.equals(preference, "Neutral")) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -303,7 +303,7 @@ public class PaperController implements PaperApi {
         }
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
-                reviewerId, paperId, ReviewerPreferences.ReviewerPreferenceEnum.valueOf(preference)
+                reviewerId, paperId, PreferenceEntity.changeStringToEnumValue(preference)
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
