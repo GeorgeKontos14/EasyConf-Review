@@ -4,63 +4,77 @@ import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import org.springframework.http.HttpStatus;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 
-public class ParameterValidator extends BaseValidator{
+public class ParameterValidator extends BaseValidator {
 
-    private TrackPhaseService trackPhaseService;
-    ParameterValidator(TrackPhaseService trackPhaseService){
-        this.trackPhaseService = trackPhaseService;
-    }
 
     @Override
     public boolean handle(CheckSubject checkSubject) throws ValidatorException {
 
-        boolean inputStatus = areInputParametersValid(checkSubject);
-        if(!inputStatus)
+        if (!areInputParametersValid(checkSubject)) {
             throw new ValidatorException(HttpStatus.BAD_REQUEST);
+        }
 
-        boolean enumStatus = isEnumStringValid(checkSubject);
-        if(!enumStatus)
+        if (!isEnumStringValid(checkSubject)) {
             throw new ValidatorException(HttpStatus.BAD_REQUEST);
+        }
 
-        boolean trackIdStatus = isTrackIdValid(checkSubject);
-        if(!trackIdStatus)
+        if (!isUserIdPositive(checkSubject)) {
             throw new ValidatorException(HttpStatus.BAD_REQUEST);
+        }
 
+        if (!isTrackIdPositive(checkSubject)) {
+            throw new ValidatorException(HttpStatus.BAD_REQUEST);
+        }
         return super.checkNext(checkSubject);
     }
 
-    boolean areInputParametersValid(CheckSubject checkSubject)
-    {
-        List<Object> inputParameters = checkSubject.getInputParameters();
-        if(inputParameters == null)
+    private boolean isUserIdPositive(CheckSubject checkSubject) {
+        Integer userId = checkSubject.getUserId();
+        if (userId == null) {
             return true;
-        for(Object o : inputParameters)
-            if(o == null)
+        }
+        return userId >= 0;
+    }
+
+    boolean areInputParametersValid(CheckSubject checkSubject) {
+        List<Object> inputParameters = checkSubject.getInputParameters();
+        if (inputParameters == null) {
+            return true;
+        }
+        for (Object o : inputParameters) {
+            if (o == null) {
                 return false;
+            }
+        }
         return true;
     }
 
     boolean isEnumStringValid(CheckSubject checkSubject) {
-        if(checkSubject.getAcceptedEnumStrings() == null)
+        if (checkSubject.getAcceptedEnumStrings() == null) {
             return true;
-        if(checkSubject.getEnumString() == null)
+        }
+        if (checkSubject.getEnumString() == null) {
             return true;
+        }
 
         boolean isEnumStringAmongGoodValues = false;
-        for(String goodValue : checkSubject.getAcceptedEnumStrings())
+        for (String goodValue : checkSubject.getAcceptedEnumStrings()) {
             if (goodValue.equals(checkSubject.getEnumString())) {
                 isEnumStringAmongGoodValues = true;
                 break;
             }
+        }
         return isEnumStringAmongGoodValues;
     }
 
-    boolean isTrackIdValid(CheckSubject checkSubject) {
+    boolean isTrackIdPositive(CheckSubject checkSubject) {
         Integer trackId = checkSubject.getTrackId();
-        if(trackId == null)
+        if (trackId == null) {
             return true;
-        return trackPhaseService.isTrackValid(trackId);
+        }
+        return trackId >= 0;
     }
 }

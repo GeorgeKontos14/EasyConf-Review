@@ -17,16 +17,16 @@ public class ChainManager {
 
     private PaperService paperService;
 
-    public ChainManager(UserService userService, PaperService paperService, ReviewService reviewService, TrackPhaseService trackPhaseService) {
+    public ChainManager(UserService userService, PaperService paperService, ReviewService reviewService,
+                        TrackPhaseService trackPhaseService) {
         this.userService = userService;
         this.paperService = paperService;
         this.reviewService = reviewService;
         this.trackPhaseService = trackPhaseService;
     }
 
-    public Validator createChain()
-    {
-        Validator parameterValidator = new ParameterValidator(trackPhaseService);
+    public Validator createChain() {
+        Validator parameterValidator = new ParameterValidator();
         Validator userValidator = new UserValidator(userService);
         parameterValidator.setNext(userValidator);
         DatabaseObjectValidator databaseObjectValidator = new DatabaseObjectValidator(paperService, reviewService);
@@ -34,13 +34,14 @@ public class ChainManager {
         return parameterValidator;
     }
 
-    public  <T> ResponseEntity<T> evaluate(CheckSubject checkSubject) {
+    public <T> ResponseEntity<T> evaluate(CheckSubject checkSubject) {
         Validator firstValidator = createChain();
-        try{
+        try {
             boolean httpStatus = firstValidator.handle(checkSubject);
         } catch (ValidatorException ve) {
             return new ResponseEntity<>(ve.getHttpStatus());
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return null;

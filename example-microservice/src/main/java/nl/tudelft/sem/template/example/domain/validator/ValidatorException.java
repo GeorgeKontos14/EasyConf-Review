@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class ValidatorException extends Exception{
+public class ValidatorException extends Exception {
     private final HttpStatus httpStatus;
 
     ValidatorException(HttpStatus httpStatus) {

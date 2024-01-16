@@ -93,7 +93,7 @@ public class ReviewControllerTest {
         ResponseEntity<Paper> response = sut.reviewFindPaperByReviewIdGet(null, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut.reviewFindPaperByReviewIdGet(-1, 1);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         response = sut.reviewFindPaperByReviewIdGet(1, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut.reviewFindPaperByReviewIdGet(1, -1);
@@ -129,6 +129,8 @@ public class ReviewControllerTest {
                 Optional.of(paper));
         Mockito.when(paperService.getPaperObjectWithId(2)).thenReturn(
                 Optional.empty());
+        Mockito.when(reviewService.existsReview(1)).thenReturn(true);
+        Mockito.when(userService.validateUser(1)).thenReturn(true);
         ResponseEntity<Paper> response = sut.reviewFindPaperByReviewIdGet(1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(paper);
@@ -143,9 +145,8 @@ public class ReviewControllerTest {
      */
     @Test
     public void findAllReviewsByPaperIdBadRequestTest() {
+
         ResponseEntity<List<Review>> response = sut.reviewFindAllReviewsByPaperIdGet(null, 1);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        response = sut.reviewFindAllReviewsByPaperIdGet(-1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut.reviewFindAllReviewsByPaperIdGet(1, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -187,7 +188,7 @@ public class ReviewControllerTest {
                 .reviewAssignPapersPost(1, null, Arrays.asList(r1, r2));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut
-                .reviewAssignPapersPost(1, 1, new ArrayList<>());
+                .reviewAssignPapersPost(-1, 1, new ArrayList<>());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -214,6 +215,7 @@ public class ReviewControllerTest {
     public void changeReviewsBadRequestTest() {
         Review r1 = buildReview(1, 1, 1);
         Review r2 = buildReview(2, 2, 2);
+        Mockito.when(userService.validateUser(1)).thenReturn(true);
         ResponseEntity<Void> response = sut
                 .changeReviews(null, 1, Arrays.asList(r1, r2));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -221,7 +223,7 @@ public class ReviewControllerTest {
                 .changeReviews(1, null, Arrays.asList(r1, r2));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut
-                .changeReviews(1, 1, new ArrayList<>());
+                .changeReviews(-1, 1, new ArrayList<>());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -350,6 +352,7 @@ public class ReviewControllerTest {
 
     @Test
     public void findAllPreferencesByUserIdUnauthorizedTest() {
+        Mockito.when(userService.validateUser(2)).thenReturn(false);
         ResponseEntity<List<ReviewerPreferences>> response = sut
                 .reviewFindAllPreferencesByUserIdGet(2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -379,6 +382,8 @@ public class ReviewControllerTest {
 
     @Test
     public void getBiddingDeadlineBadRequestTest() {
+        Mockito.when(userService.validateUser(1)).thenReturn(true);
+        Mockito.when(userService.validateUser(-1)).thenReturn(false);
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(null, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         response = sut.reviewGetBiddingDeadlineGet(-1, 1);

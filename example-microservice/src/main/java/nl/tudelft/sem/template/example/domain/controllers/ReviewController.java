@@ -45,12 +45,12 @@ public class ReviewController implements ReviewApi {
     /**
      * Constructor for reviewController.
      *
-     * @param userService to be called on
-     * @param reviewService to be called on
+     * @param userService                to be called on
+     * @param reviewService              to be called on
      * @param reviewerPreferencesService to be called on
-     * @param paperService to be called on
-     * @param trackPhaseService to be called on
-     * @param chainManager chain manager instance
+     * @param paperService               to be called on
+     * @param trackPhaseService          to be called on
+     * @param chainManager               chain manager instance
      */
     public ReviewController(UserService userService, ReviewService reviewService,
                             ReviewerPreferencesService reviewerPreferencesService, PaperService paperService,
@@ -78,7 +78,7 @@ public class ReviewController implements ReviewApi {
         }
 
         Optional<List<Integer>> papersOpt = trackPhaseService
-                .getTrackPapers(trackId, new RestTemplate());
+            .getTrackPapers(trackId, new RestTemplate());
         if (papersOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -90,17 +90,18 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<Void> reviewAssignPapersPost(
-            @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
-            @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "userId", required = false) Integer userId,
-            @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-                    in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
-                    required = false) List<@Valid Review> reviews
+        @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
+        @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "userId", required = false) Integer userId,
+        @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
+            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
+            required = false) List<@Valid Review> reviews
     ) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
         builder.setUserId(userId);
+        builder.setTrack(trackId);
         CheckSubject checkSubject = builder.build();
 
         ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
@@ -117,29 +118,30 @@ public class ReviewController implements ReviewApi {
      *
      * @param trackId the ID of the track of the papers to be reviewed.
      *                (to be used for verification).
-     * @param userId the ID of the user.
+     * @param userId  the ID of the user.
      * @param reviews the reviews to be changed
      * @return Successful Response (status code 200)
-     *         or invalid input (status code 400)
-     *         or reviewer/paper not found (status code 404)
-     *         or server error (status code 500)
+     * or invalid input (status code 400)
+     * or reviewer/paper not found (status code 404)
+     * or server error (status code 500)
      */
     @RequestMapping(
-            method = RequestMethod.PUT,
-            value = "/review/changeAssignments"
+        method = RequestMethod.PUT,
+        value = "/review/changeAssignments"
     )
     public ResponseEntity<Void> changeReviews(
-            @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
-            @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "userId", required = false) Integer userId,
-            @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-                    in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
-                    required = false) List<@Valid Review> reviews) {
+        @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
+        @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "userId", required = false) Integer userId,
+        @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
+            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
+            required = false) List<@Valid Review> reviews) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
         builder.setUserId(userId);
+        builder.setTrack(trackId);
         CheckSubject checkSubject = builder.build();
 
         ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
@@ -157,8 +159,8 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<List<Review>> reviewFindAllReviewsByUserIDGet(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user the reviews of whom are returned.",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "userID", description = "The ID of the user the reviews of whom are returned.",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Collections.singletonList(userId)));
@@ -176,10 +178,10 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<List<Review>> reviewFindAllReviewsByPaperIdGet(
-            @NotNull @Parameter(name = "paperID", description = "The ID of the paper the reviews of which are returned",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "paperID", description = "The ID of the paper the reviews of which are returned",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
@@ -197,11 +199,11 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<Paper> reviewFindPaperByReviewIdGet(
-            @NotNull @Parameter(name = "reviewID", description = "The ID of the review for which the paper should "
-                    + "be returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value =
-                    "reviewID") Integer reviewId,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "reviewID", description = "The ID of the review for which the paper should "
+            + "be returned", required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value =
+            "reviewID") Integer reviewId,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -223,21 +225,21 @@ public class ReviewController implements ReviewApi {
         int paperId = review.get().getPaperId();
         Optional<Paper> paper = paperService.getPaperObjectWithId(paperId);
         return paper.map(value -> new ResponseEntity<>(value, HttpStatus.ACCEPTED))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Override
     public ResponseEntity<Review> reviewEditConfidenceScorePut(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId,
-            @Parameter(name = "Review", description = "the review to be updated", required = true)
-            @Valid @RequestBody Review review
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId,
+        @Parameter(name = "Review", description = "the review to be updated", required = true)
+        @Valid @RequestBody Review review
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(userId, review)));
         builder.setUserId(userId);
-        if (review != null){
+        if (review != null) {
             builder.setReviewIds(new ArrayList<>(Arrays.asList(review.getId())));
         }
 
@@ -253,14 +255,14 @@ public class ReviewController implements ReviewApi {
 
     @Override
     public ResponseEntity<List<ReviewerPreferences>> reviewFindAllPreferencesByUserIdGet(
-            @NotNull @Parameter(name = "reviewerID", description =
-                    "The ID of the reviewer the reviews of whom are returned.", required = true,
-                    in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewerID") Integer reviewId
+        @NotNull @Parameter(name = "reviewerID", description =
+            "The ID of the reviewer the reviews of whom are returned.", required = true,
+            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewerID") Integer reviewId
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Collections.singletonList(reviewId)));
-
+        builder.setUserId(reviewId);
         CheckSubject checkSubject = builder.build();
         ResponseEntity<List<ReviewerPreferences>> responseStatus = chainManager.evaluate(checkSubject);
         if (responseStatus != null) {
@@ -272,10 +274,10 @@ public class ReviewController implements ReviewApi {
     }
 
     public ResponseEntity<Review> reviewEditOverallScorePut(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId,
-            @Parameter(name = "Review", description = "the review to be updated", required = true)
-            @Valid @RequestBody Review review) {
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId,
+        @Parameter(name = "Review", description = "the review to be updated", required = true)
+        @Valid @RequestBody Review review) {
         return reviewEditConfidenceScorePut(userId, review);
     }
 
@@ -284,6 +286,7 @@ public class ReviewController implements ReviewApi {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId)));
         builder.setUserId(userId);
+        builder.setTrack(trackId);
 
         CheckSubject checkSubject = builder.build();
         ResponseEntity<String> responseStatus = chainManager.evaluate(checkSubject);
@@ -292,7 +295,7 @@ public class ReviewController implements ReviewApi {
         }
         Optional<String> deadline = reviewService.getTrackDeadline(trackId, new RestTemplate());
         return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -307,10 +310,10 @@ public class ReviewController implements ReviewApi {
      */
     @Override
     public ResponseEntity<Comment> reviewPostCommentPost(
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true) Integer userId,
-            @Parameter(name = "Comment", description = "the comment to post", required = true) @RequestBody
-            Comment comment) {
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true) Integer userId,
+        @Parameter(name = "Comment", description = "the comment to post", required = true) @RequestBody
+        Comment comment) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(Arrays.asList(userId, comment));
         builder.setUserId(userId);

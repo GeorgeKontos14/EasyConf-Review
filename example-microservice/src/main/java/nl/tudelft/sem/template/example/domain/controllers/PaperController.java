@@ -85,15 +85,15 @@ public class PaperController implements PaperApi {
 
     @Override
     public ResponseEntity<List<Paper>> paperGetPaperByIDGet(
-            @NotNull @Parameter(name = "PaperId", description = "The id for which the paper should be reviewed.",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "PaperId") Integer paperId,
-            @NotNull @Parameter(name = "userId", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "userId") Integer userId
+        @NotNull @Parameter(name = "PaperId", description = "The id for which the paper should be reviewed.",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "PaperId") Integer paperId,
+        @NotNull @Parameter(name = "userId", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "userId") Integer userId
     ) {
 
-        CheckSubjectBuilder builder  = new CheckSubjectBuilder();
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
         builder.setUserId(userId);
         builder.setPaperIds(new ArrayList<>(Collections.singletonList(paperId)));
@@ -123,12 +123,12 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Comment>> paperGetPaperCommentsGet(
-            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "paperID") Integer paperId,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "paperID") Integer paperId,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "userID") Integer userId
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -150,17 +150,17 @@ public class PaperController implements PaperApi {
      * endpoint for getting title and abstract.
      *
      * @param paperId The ID of the paper we want to view the title and abstract (required)
-     * @param userId The ID of the user, used for authorization (required)
+     * @param userId  The ID of the user, used for authorization (required)
      * @return a ResponseEntity object, which needs to be a Paper with only title and abstract
      */
     @Override
     public ResponseEntity<String> paperGetTitleAndAbstractGet(
-            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "paperID") Integer paperId,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY)
-            @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to view the title and abstract",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "paperID") Integer paperId,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "userID") Integer userId
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -209,8 +209,8 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
-            "The ID of the paper we want to see the reviewer preferences for", required = true,
-            in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
+        "The ID of the paper we want to see the reviewer preferences for", required = true,
+        in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Collections.singletonList(reviewerId)));
@@ -231,11 +231,11 @@ public class PaperController implements PaperApi {
 
     @Override
     public ResponseEntity<List<ReviewerPreferences>> paperGetPreferencesByPaperGet(
-            @NotNull @Parameter(name = "paperID", description =
-                    "The ID of the paper we want to see the reviewer preferences for",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "paperID", description =
+            "The ID of the paper we want to see the reviewer preferences for",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Arrays.asList(paperId, userId)));
@@ -267,12 +267,12 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<Void> paperUpdatePaperStatusPut(
-            @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to change the status for",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
-            @Parameter(name = "status", description = "The new status of the paper. Can be 'Unresolved', 'Accepted' "
-                    + "or 'Rejected'", required = true) String status,
-            @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
-                    required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
+        @NotNull @Parameter(name = "paperID", description = "The ID of the paper we want to change the status for",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer paperId,
+        @Parameter(name = "status", description = "The new status of the paper. Can be 'Unresolved', 'Accepted' "
+            + "or 'Rejected'", required = true) String status,
+        @NotNull @Parameter(name = "userID", description = "The ID of the user, used for authorization",
+            required = true, in = ParameterIn.QUERY) @Valid @RequestParam(value = "userID") Integer userId
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -310,12 +310,14 @@ public class PaperController implements PaperApi {
      */
 
     public ResponseEntity<Void> paperPostPreferenceScorePost(
-            @NotNull @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY)
-                @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
-            @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY)
-                @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
-            @NotNull @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY)
-                @Valid @RequestParam(value = "preference", required = true) String preference
+        @NotNull
+        @Parameter(name = "reviewer_id", description = "The id of the reviewer", required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "reviewer_id", required = true) Integer reviewerId,
+        @NotNull @Parameter(name = "paper_id", description = "The id of the paper", required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "paper_id", required = true) Integer paperId,
+        @NotNull
+        @Parameter(name = "preference", description = "The preference score", required = true, in = ParameterIn.QUERY)
+        @Valid @RequestParam(value = "preference", required = true) String preference
     ) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -333,7 +335,7 @@ public class PaperController implements PaperApi {
         }
 
         PreferenceEntity preferenceEntity = new PreferenceEntity(
-                reviewerId, paperId, PreferenceEntity.changeStringToEnumValue(preference)
+            reviewerId, paperId, PreferenceEntity.changeStringToEnumValue(preference)
         );
         PreferenceEntity saved = reviewerPreferencesService.saveReviewerPreference(preferenceEntity);
 
