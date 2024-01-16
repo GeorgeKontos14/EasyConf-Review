@@ -1,4 +1,8 @@
 # Sprint 9 Retrospective
+_For the sprint ending on January 12_
+
+### Note from Jan 16
+This sprint is the sprint our team mate Lucas officially left the course. 
 
 ## State of the team
 We've had a lot of issues with our team. In the first week, our first team mate dropped out. After the midterm one of the other team mates stopped responding to messages. We have discussed this with the Head TA. He's officially out of our team.
