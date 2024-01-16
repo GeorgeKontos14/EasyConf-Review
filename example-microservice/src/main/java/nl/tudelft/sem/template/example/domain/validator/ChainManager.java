@@ -17,6 +17,14 @@ public class ChainManager {
 
     private PaperService paperService;
 
+    /**
+     * ChainManager constructor.
+     *
+     * @param userService - reference to userService
+     * @param paperService - reference to paperService
+     * @param reviewService - reference to reviewService
+     * @param trackPhaseService - reference to a trackPhaseService
+     */
     public ChainManager(UserService userService, PaperService paperService, ReviewService reviewService,
                         TrackPhaseService trackPhaseService) {
         this.userService = userService;
@@ -25,6 +33,11 @@ public class ChainManager {
         this.trackPhaseService = trackPhaseService;
     }
 
+    /**
+     * Method that creates a chain of ParameterValidator -> UserValidator -> DatabaseObjectValidator.
+     *
+     * @return reference to the first Validator in chain
+     */
     public Validator createChain() {
         Validator parameterValidator = new ParameterValidator();
         Validator userValidator = new UserValidator(userService);
@@ -33,6 +46,15 @@ public class ChainManager {
         userValidator.setNext(databaseObjectValidator);
         return parameterValidator;
     }
+
+    /**
+     * Method that evaluates a checkSubject object through the chain.
+     *
+     * @param checkSubject - the object that needs to be tested through the chain
+     * @param <T> The type of the object this ResponseEntity returns
+     * @return null if passed the Chain, or ResponseEntity with error in case it's fine
+     *
+     */
 
     public <T> ResponseEntity<T> evaluate(CheckSubject checkSubject) {
         Validator firstValidator = createChain();

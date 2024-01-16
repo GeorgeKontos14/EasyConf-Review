@@ -2,7 +2,7 @@ package nl.tudelft.sem.template.example.domain.builder;
 
 import java.util.List;
 
-public class CheckSubjectBuilder {
+public class CheckSubjectBuilder implements Builder {
 
     private List<Object> inputParameters;
     private Integer userId;

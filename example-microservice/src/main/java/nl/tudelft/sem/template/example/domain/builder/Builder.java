@@ -11,5 +11,11 @@ public interface Builder {
 
     public void setReviewIds(List<Integer> reviewIds);
 
+    public void setEnumValue(String status);
+
+    public void setGoodEnumValues(List<String> acceptedEnumStrings);
+
+    public void setTrack(Integer trackId);
+
     public CheckSubject build();
 }

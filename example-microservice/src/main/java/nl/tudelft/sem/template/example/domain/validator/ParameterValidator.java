@@ -1,11 +1,10 @@
 package nl.tudelft.sem.template.example.domain.validator;
 
+import java.util.List;
+import javax.persistence.criteria.CriteriaBuilder;
 import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import org.springframework.http.HttpStatus;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import java.util.List;
 
 public class ParameterValidator extends BaseValidator {
 
