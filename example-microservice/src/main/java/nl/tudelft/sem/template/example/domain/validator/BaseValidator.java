@@ -5,8 +5,9 @@ import nl.tudelft.sem.template.example.domain.builder.CheckSubject;
 public abstract class BaseValidator implements Validator {
     private Validator next;
 
-    public void setNext(Validator next) {
+    public Validator setNext(Validator next) {
         this.next = next;
+        return next;
     }
 
     public Validator getNext() {
