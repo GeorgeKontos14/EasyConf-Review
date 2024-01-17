@@ -2,10 +2,8 @@ package nl.tudelft.sem.template.example.domain.integration;
 
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.models.TrackPhase;
-import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
-import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
-import nl.tudelft.sem.template.example.domain.repositories.TrackPhaseRepository;
+import nl.tudelft.sem.template.example.domain.repositories.*;
+import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
@@ -35,6 +35,8 @@ public class FinalPhaseIntegrationTests {
     private ReviewRepository reviewRepository;
     @Autowired
     private PcChairRepository pcChairRepository;
+    @Autowired
+    private CommentRepository commentRepository;
     @Autowired
     private MockMvc mockMvc;
 
@@ -63,7 +65,104 @@ public class FinalPhaseIntegrationTests {
         PcChair pcChair = new PcChair();
         pcChair.setId(66);
         pcChair.addPaper(p.getId());
+        pcChairRepository.save(pcChair);
+        Comment c = new Comment();
+        c.setId(5);
+        c.paperId(3);
+        c.confidential(true);
+        commentRepository.save(c);
+    }
 
+    @Test
+    void getPaperCommentsTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperComments")
+                .param("paperID", "3")
+                .param("userID", "99"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(5));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperComments")
+                        .param("paperID", "333")
+                        .param("userID", "99"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperComments")
+                        .param("paperId", "333")
+                        .param("userID", "99"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void getPaperReviewsTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperReviews")
+                .param("paperId", "3")
+                .param("userID", "99"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(5))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(6));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperReviews")
+                        .param("paperId", "93")
+                        .param("userID", "99"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/paper/getPaperReviews")
+                        .param("paperID", "93")
+                        .param("userID", "99"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void updatePaperStatusAccepted() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                .param("paperID", "3")
+                .param("status", "Accepted")
+                .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void updatePaperStatusRejected() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                        .param("paperID", "3")
+                        .param("status", "Rejected")
+                        .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void updatePaperStatusUnresolved() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                        .param("paperID", "3")
+                        .param("status", "Unresolved")
+                        .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void updatePaperStatusBalderdash() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                        .param("paperID", "3")
+                        .param("status", "balderdash")
+                        .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void updatePaperStatusBadParam() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                        .param("paperId", "3")
+                        .param("status", "balderdash")
+                        .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void updatePaperStatusNotFound() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/paper/updatePaperStatus")
+                        .param("paperID", "56")
+                        .param("status", "Rejected")
+                        .param("userID", "66"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
 }
