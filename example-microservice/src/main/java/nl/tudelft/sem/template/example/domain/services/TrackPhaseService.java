@@ -1,17 +1,17 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import java.util.List;
-import java.util.Optional;
 import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.repositories.TrackPhaseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TrackPhaseService {
     private final transient TrackPhaseRepository trackPhaseRepository;
+
 
     private final RestTemplate restTemplate;
     public TrackPhaseService(TrackPhaseRepository trackPhaseRepository, RestTemplate restTemplate) {

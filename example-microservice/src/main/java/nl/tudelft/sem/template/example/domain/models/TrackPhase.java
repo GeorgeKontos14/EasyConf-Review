@@ -4,12 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,12 +12,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Table(name = "trackPhase")
 public class TrackPhase {
     @Id
     private Integer id;
 
     @ElementCollection
-    @CollectionTable(name = "listOfPapers")
+    @CollectionTable(name = "listOfPapersTrack")
     @Valid
     private List<Integer> papers;
 

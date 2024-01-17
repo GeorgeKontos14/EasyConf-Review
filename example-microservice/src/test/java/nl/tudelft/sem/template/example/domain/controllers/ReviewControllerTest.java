@@ -420,7 +420,7 @@ public class ReviewControllerTest {
 
     @Test
     public void getBiddingDeadlineNotFoundTest() {
-        Mockito.when(reviewService.getTrackDeadline(2, new RestTemplate()))
+        Mockito.when(reviewService.getTrackDeadline(2))
                 .thenReturn(Optional.empty());
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(2, 1);
         assertThat(response.getStatusCode()).isEqualTo((HttpStatus.NOT_FOUND));
@@ -429,7 +429,7 @@ public class ReviewControllerTest {
     @Test
     public void getBiddingDeadlineOkTest() {
         Optional<String> opt = Optional.of("2024-12-12");
-        Mockito.when(reviewService.getTrackDeadline(anyInt(), any(RestTemplate.class)))
+        Mockito.when(reviewService.getTrackDeadline(anyInt()))
                 .thenReturn(opt);
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
