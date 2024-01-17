@@ -396,7 +396,7 @@ public class ReviewControllerTest {
 
     @Test
     public void startBiddingForTrackNotFoundTest() {
-        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+        Mockito.when(trackPhaseService.getTrackPapers(2))
                 .thenReturn(Optional.empty());
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -404,7 +404,7 @@ public class ReviewControllerTest {
 
     @Test
     public void startBiddingDeadlineOkTest() {
-        Mockito.when(trackPhaseService.getTrackPapers(anyInt(), any(RestTemplate.class)))
+        Mockito.when(trackPhaseService.getTrackPapers(anyInt()))
                 .thenReturn(Optional.of(Arrays.asList(1, 2, 3)));
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);

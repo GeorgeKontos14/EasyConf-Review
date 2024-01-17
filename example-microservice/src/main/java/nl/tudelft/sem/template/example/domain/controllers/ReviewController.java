@@ -80,7 +80,7 @@ public class ReviewController implements ReviewApi {
         }
 
         Optional<List<Integer>> papersOpt = trackPhaseService
-            .getTrackPapers(trackId, new RestTemplate());
+            .getTrackPapers(trackId);
         if (papersOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
