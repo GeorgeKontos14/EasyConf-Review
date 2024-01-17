@@ -1,27 +1,33 @@
-# Lab Template
+# README for Review Microservice 5b
+Welcome to the Review microservice of team 5b. If you have any question we are always happy to answer them.
 
-This template contains two microservices:
-- authentication-microservice
-- example-microservice
+## Important note
+There have been some issues in our team. Even though we started out with six team members, we now only have three left. 
+The first teammate decided not to do the course in the first week. The second teammate just stopped responding to any of
+our messages around the midterms and the third teammate did not even pick up a call starting January 2. As you can see 
+in our git repo, none of them have contributed much to our group's work. 
 
-The `authentication-microservice` is responsible for registering new users and authenticating current ones. After successful authentication, this microservice will provide a JWT token which can be used to bypass the security on the `example-microservice`. This token contains the *NetID* of the user that authenticated. If your scenario includes different roles, these will have to be added to the authentication-microservice and to the JWT token. To do this, you will have to:
-- Add a concept of roles to the `AppUser`
-- Add the roles to the `UserDetails` in `JwtUserDetailsService`
-- Add the roles as claims to the JWT token in `JwtTokenGenerator`
+We have tried our best and all things considered, we think we have held up quite well. Nevertheless, a few features 
+around analytics have not been implemented and the final report may not be as thorough as you would expect from a 
+complete group. We kindly ask you to keep this in mind while grading.
 
-The `example-microservice` is just an example and needs to be modified to suit the domain you are modeling based on your scenario.
+Naturally the Head TA has been informed shortly after these issues had arisen. There should be a note of her in our 
+dossier.
 
-The `domain` and `application` packages contain the code for the domain layer and application layer. The code for the framework layer is the root package as *Spring* has some limitations on were certain files are located in terms of autowiring.
+## Final report
+The final report was made in Overleaf, so you can find it here: [final-report.pdf](docs/final-report.pdf)
 
-## Running the microservices
+## List of final group members
+These are the members of our group who finished the project
+ - George Kontos
+ - Tudor Chirila
+ - Rein Lakerveld
 
-You can run the two microservices individually by starting the Spring applications. Then, you can use *Postman* to perform the different requests:
+## Git names
+Rein Lakerveld at some point accidentally switched from his university git account to his personal git account (with the
+name rainframe). Lucas Paul had the same issues, but he did not finish the project.
 
-Register:
-![image](instructions/register.png)
-
-Authenticate:
-![image](instructions/authenticate.png)
-
-Hello:
-![image](instructions/hello.png)
+## Agendas, minutes and retrospectives
+The agendas, minutes and retrospectives can be found [in the docs' directory](docs). The agendas are complete. Some of 
+the minutes and retrospectives have sadly been lost by erroneous merges, forgetting to take notes ones, etc. There are 
+however enough documents to get an idea of our work structure.
