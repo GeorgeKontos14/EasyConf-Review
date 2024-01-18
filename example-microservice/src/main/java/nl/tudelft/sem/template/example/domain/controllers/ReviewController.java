@@ -2,11 +2,8 @@ package nl.tudelft.sem.template.example.domain.controllers;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.ReviewApi;
@@ -149,6 +146,38 @@ public class ReviewController implements ReviewApi {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         reviewService.saveReviews(reviews);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "review/assignAutomatically"
+    )
+    public ResponseEntity<Void> assignAutomatically(@Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
+                                                        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
+                                                    @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
+                                                        @Valid @RequestParam(value = "userId", required = false) Integer userId) {
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId)));
+        builder.setUserId(userId);
+        builder.setTrack(trackId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
+        }
+
+        if (!reviewService.verifyPcChair(userId, trackId)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<List<Integer>> trackPapers = trackPhaseService.getTrackPapers(trackId);
+        if (trackPapers.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        List<Paper> papers = paperService.findAllPapersForIdList(trackPapers.get());
+        Map<Integer, List<Integer>> conflicts = new HashMap<>();
+        List<ReviewerPreferences> prefs = new ArrayList<>();
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
