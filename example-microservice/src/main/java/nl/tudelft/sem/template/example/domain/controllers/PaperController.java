@@ -174,7 +174,7 @@ public class PaperController implements PaperApi {
         }
 
 
-        Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperId, new RestTemplate());
+        Optional<PaperResponse> foundPaper = paperService.getPaperObjectFromSubmissions(paperId);
         if (foundPaper.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -206,9 +206,9 @@ public class PaperController implements PaperApi {
      * or Server error (status code 500)
      */
     @Override
-    public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "paperID", description =
-        "The ID of the paper we want to see the reviewer preferences for", required = true,
-        in = ParameterIn.QUERY) @Valid @RequestParam(value = "paperID") Integer reviewerId) {
+    public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "reviewer_id", description =
+        "The ID of the reviewer we want to see the reviewer preferences for", required = true,
+        in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id") Integer reviewerId) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
         builder.setInputParameters(new ArrayList<>(Collections.singletonList(reviewerId)));

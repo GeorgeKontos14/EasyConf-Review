@@ -26,7 +26,7 @@ public class PcChair {
 
     @Setter
     @ElementCollection
-    @CollectionTable(name = "listOfPapers")
+    @CollectionTable(name = "listOfPapersPcChair")
     @Valid
     private List<Integer> papers;
 

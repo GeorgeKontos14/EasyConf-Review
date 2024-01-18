@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 import nl.tudelft.sem.template.example.domain.models.TrackPhase;
 import nl.tudelft.sem.template.example.domain.services.PaperService;
 import nl.tudelft.sem.template.example.domain.services.ReviewService;
@@ -24,7 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+
 
 public class ReviewControllerTest {
     private UserService userService;
@@ -49,6 +47,14 @@ public class ReviewControllerTest {
         review.setPaperId(paperId);
         review.setReviewerId(reviewerId);
         return review;
+    }
+
+    private Paper buildPaper(int id, List<Integer> authors, Paper.FinalVerdictEnum finalVerdictEnum) {
+        Paper paper = new Paper();
+        paper.setId(id);
+        paper.setAuthors(authors);
+        paper.setFinalVerdict(finalVerdictEnum);
+        return paper;
     }
 
     /**
@@ -396,7 +402,7 @@ public class ReviewControllerTest {
 
     @Test
     public void startBiddingForTrackNotFoundTest() {
-        Mockito.when(trackPhaseService.getTrackPapers(2, new RestTemplate()))
+        Mockito.when(trackPhaseService.getTrackPapers(2))
                 .thenReturn(Optional.empty());
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(2);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -404,7 +410,7 @@ public class ReviewControllerTest {
 
     @Test
     public void startBiddingDeadlineOkTest() {
-        Mockito.when(trackPhaseService.getTrackPapers(anyInt(), any(RestTemplate.class)))
+        Mockito.when(trackPhaseService.getTrackPapers(anyInt()))
                 .thenReturn(Optional.of(Arrays.asList(1, 2, 3)));
         ResponseEntity<Void> response = sut.reviewStartBiddingForTrackGet(1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -420,7 +426,7 @@ public class ReviewControllerTest {
 
     @Test
     public void getBiddingDeadlineNotFoundTest() {
-        Mockito.when(reviewService.getTrackDeadline(2, new RestTemplate()))
+        Mockito.when(reviewService.getTrackDeadline(2))
                 .thenReturn(Optional.empty());
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(2, 1);
         assertThat(response.getStatusCode()).isEqualTo((HttpStatus.NOT_FOUND));
@@ -429,10 +435,57 @@ public class ReviewControllerTest {
     @Test
     public void getBiddingDeadlineOkTest() {
         Optional<String> opt = Optional.of("2024-12-12");
-        Mockito.when(reviewService.getTrackDeadline(anyInt(), any(RestTemplate.class)))
+        Mockito.when(reviewService.getTrackDeadline(anyInt()))
                 .thenReturn(opt);
         ResponseEntity<String> response = sut.reviewGetBiddingDeadlineGet(1, 1);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
+
+    @Test
+    public void assignAutomaticallyBadRequestTest() {
+        ResponseEntity<Void> response = sut.assignAutomatically(null, 1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        response = sut.assignAutomatically(1, null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void assignAutomaticallyUnauthorizedTest() {
+        Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(false);
+        ResponseEntity<Void> response = sut.assignAutomatically(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void assignAutomaticallyNotFoundTest() {
+        Mockito.when(trackPhaseService.getTrackPapers(1)).thenReturn(Optional.empty());
+        Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(true);
+        ResponseEntity<Void> response = sut.assignAutomatically(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void assignAutomaticallyOkTest() {
+        Paper p1 = buildPaper(1, Arrays.asList(1,2,3),
+                Paper.FinalVerdictEnum.ACCEPTED);
+        Paper p2 = buildPaper(2, Arrays.asList(11,2,3),
+                Paper.FinalVerdictEnum.ACCEPTED);
+        Mockito.when(trackPhaseService.getTrackPapers(1))
+                .thenReturn(Optional.of(Arrays.asList(1,2)));
+        Mockito.when(paperService.findAllPapersForIdList(Arrays.asList(1,2)))
+                        .thenReturn(Arrays.asList(p1,p2));
+        Mockito.when(reviewService.verifyPcChair(1,1)).thenReturn(true);
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        map.put(1, Arrays.asList(1,11));
+        map.put(2, Arrays.asList(2,3));
+        map.put(3, Collections.emptyList());
+        map.put(4, Collections.singletonList(1));
+        Mockito.when(paperService.getConflictsPerReviewers(Arrays.asList(1,2)))
+                .thenReturn(map);
+        ResponseEntity<Void> response = sut.assignAutomatically(1,1);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        Mockito.verify(reviewService).saveReviews(any());
+    }
+
 
 }

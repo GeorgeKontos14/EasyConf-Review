@@ -5,20 +5,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import nl.tudelft.sem.template.example.domain.models.Reviewer;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
+import nl.tudelft.sem.template.example.domain.responses.SubmissionPaperIdsResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -29,6 +29,7 @@ class PaperServiceTest {
     private ReviewService reviewService;
     private PaperRepository paperRepository;
     private CommentRepository commentRepository;
+    private ReviewerRepository reviewerRepository;
     private PaperService paperService;
     private Paper goodPaper;
 
@@ -48,7 +49,9 @@ class PaperServiceTest {
         commentRepository = Mockito.mock(CommentRepository.class);
         reviewService = Mockito.mock(ReviewService.class);
         userService = Mockito.mock(UserService.class);
-        paperService = new PaperService(userService, reviewService, paperRepository, commentRepository);
+        reviewerRepository = Mockito.mock(ReviewerRepository.class);
+        paperService = new PaperService(userService, reviewService, paperRepository,
+                commentRepository, reviewerRepository, restTemplate );
     }
 
     @Test
@@ -73,7 +76,7 @@ class PaperServiceTest {
         ResponseEntity<PaperResponse> result = ResponseEntity.of(Optional.of(paperResponse));
         Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 eq(PaperResponse.class))).thenReturn(result);
-        Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3, restTemplate);
+        Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3);
         assertThat(response).isEqualTo(Optional.of(paperResponse));
     }
 
@@ -82,7 +85,7 @@ class PaperServiceTest {
         RuntimeException e = Mockito.mock(RuntimeException.class);
         Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 eq(PaperResponse.class))).thenThrow(e);
-        Optional<PaperResponse> res = paperService.getPaperObjectFromSubmissions(1, restTemplate);
+        Optional<PaperResponse> res = paperService.getPaperObjectFromSubmissions(1);
         assertThat(res.isEmpty()).isTrue();
         Mockito.verify(e).printStackTrace();
     }
@@ -186,6 +189,82 @@ class PaperServiceTest {
         List<Paper> ans = paperService.getFinalDecisionsOfPapersForReviewer(3);
         assertThat(ans.size()).isEqualTo(1);
         Paper ansPaper1 = buildPaper(1, null, Paper.FinalVerdictEnum.ACCEPTED);
-        assertThat(ans.get(0)).isEqualTo(ansPaper1);;
+        assertThat(ans.get(0)).isEqualTo(ansPaper1);
     }
+
+
+    @Test
+    void getAllPaperIdsForTrack() {
+        ResponseEntity<SubmissionPaperIdsResponse> response1 = new ResponseEntity<>(HttpStatus.OK);
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+            eq(SubmissionPaperIdsResponse.class))).thenReturn(response1);
+        assertThat(paperService.getAllPaperIdsForTrack(1)).isEqualTo(Optional.empty());
+
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+            eq(SubmissionPaperIdsResponse.class))).thenThrow(new RuntimeException());
+        assertThat(paperService.getAllPaperIdsForTrack(1)).isEqualTo(Optional.empty());
+
+        ResponseEntity<SubmissionPaperIdsResponse> response2 = ResponseEntity.of(Optional.of(new SubmissionPaperIdsResponse()));
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+            eq(SubmissionPaperIdsResponse.class))).thenReturn(response2);
+        assertThat(paperService.getAllPaperIdsForTrack(1)).isEqualTo(Optional.empty());
+
+        SubmissionPaperIdsResponse submissionPaperIdsResponse = new SubmissionPaperIdsResponse();
+        submissionPaperIdsResponse.setSubmissionIds(List.of());
+        ResponseEntity<SubmissionPaperIdsResponse> emptyPapers = ResponseEntity.of(Optional.of(submissionPaperIdsResponse));
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+            eq(SubmissionPaperIdsResponse.class))).thenReturn(emptyPapers);
+        assertThat(paperService.getAllPaperIdsForTrack(1)).isEqualTo(Optional.of(submissionPaperIdsResponse.getSubmissionIds()));
+        Mockito.verify(paperRepository, Mockito.times(0)).save(any());
+    }
+
+    @Test
+    void getAllPaperIdsForTrackWork() {
+        SubmissionPaperIdsResponse submissionPaperIdsResponse = new SubmissionPaperIdsResponse();
+        submissionPaperIdsResponse.setSubmissionIds(List.of(1, 2, 3));
+        ResponseEntity<SubmissionPaperIdsResponse> papers = ResponseEntity.of(Optional.of(submissionPaperIdsResponse));
+        Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+            eq(SubmissionPaperIdsResponse.class))).thenReturn(papers);
+        assertThat(paperService.getAllPaperIdsForTrack(1)).isEqualTo(Optional.of(submissionPaperIdsResponse.getSubmissionIds()));
+        Mockito.verify(paperRepository, Mockito.times(3)).save(any());
+
+    }
+
+    @Test
+    public void getConflictsPerReviewerTest() {
+        List<Reviewer> reviewers = new ArrayList<>();
+        reviewers.add(new Reviewer(1));
+        reviewers.add(new Reviewer(2));
+        reviewers.add(new Reviewer(3));
+        reviewers.add(new Reviewer(4));
+        PaperResponse r1 = new PaperResponse("a", Arrays.asList(1,2), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(1,2,4), "a");
+        PaperResponse r2 = new PaperResponse("a", Arrays.asList(3,4), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(1,3,5), "a");
+        PaperResponse r3 = new PaperResponse("a", Arrays.asList(2, 5), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(2,4, 5), "a");
+        Mockito.when(reviewerRepository.findAll()).thenReturn(reviewers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        Mockito.when(restTemplate.exchange("localhost:8082/submissions/1/info",
+                HttpMethod.GET, entity, PaperResponse.class))
+                .thenReturn(ResponseEntity.of(Optional.of(r1)));
+        Mockito.when(restTemplate.exchange("localhost:8082/submissions/2/info",
+                        HttpMethod.GET, entity, PaperResponse.class))
+                .thenReturn(ResponseEntity.of(Optional.of(r2)));
+        Mockito.when(restTemplate.exchange("localhost:8082/submissions/3/info",
+                        HttpMethod.GET, entity, PaperResponse.class))
+                .thenReturn(ResponseEntity.of(Optional.of(r3)));
+        Map<Integer, List<Integer>> result = paperService
+                .getConflictsPerReviewers(Arrays.asList(1,2,3));
+        assertThat(result.keySet().size()).isEqualTo(5);
+        assertThat(result.get(1).size()).isEqualTo(4);
+        assertThat(result.get(2).size()).isEqualTo(3);
+        assertThat(result.get(3).size()).isEqualTo(2);
+        assertThat(result.get(4).size()).isEqualTo(3);
+        assertThat(result.get(5).size()).isEqualTo(4);
+    }
+
+
 }

@@ -2,11 +2,8 @@ package nl.tudelft.sem.template.example.domain.controllers;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import nl.tudelft.sem.template.api.ReviewApi;
@@ -18,6 +15,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.util.ReviewUtils;
 import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
@@ -30,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 
 @RestController
@@ -80,30 +77,23 @@ public class ReviewController implements ReviewApi {
         }
 
         Optional<List<Integer>> papersOpt = trackPhaseService
-            .getTrackPapers(trackId, new RestTemplate());
+            .getTrackPapers(trackId);
         if (papersOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         TrackPhase phase = new TrackPhase(papersOpt.get());
+        phase.setId(trackId);
         trackPhaseService.saveTrackPhase(phase);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
 
     @Override
-    public ResponseEntity<Void> reviewAssignPapersPost(
-        @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
-        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
-        @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
-        @Valid @RequestParam(value = "userId", required = false) Integer userId,
-        @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
-            required = false) List<@Valid Review> reviews
-    ) {
+    public ResponseEntity<Void> reviewAssignPapersPost(Integer trackID, Integer userId, List<Review> review) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
-        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackID, userId, review)));
         builder.setUserId(userId);
-        builder.setTrack(trackId);
+        builder.setTrack(trackID);
         CheckSubject checkSubject = builder.build();
 
         ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
@@ -111,7 +101,7 @@ public class ReviewController implements ReviewApi {
         if (responseStatus != null) {
             return responseStatus;
         }
-        reviewService.saveReviews(reviews);
+        reviewService.saveReviews(review);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
@@ -137,7 +127,7 @@ public class ReviewController implements ReviewApi {
         @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
         @Valid @RequestParam(value = "userId", required = false) Integer userId,
         @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
+            in = ParameterIn.QUERY) @Valid @RequestBody(
             required = false) List<@Valid Review> reviews) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -155,6 +145,42 @@ public class ReviewController implements ReviewApi {
         if (!reviewService.verifyPcChair(userId, trackId)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
+        reviewService.saveReviews(reviews);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(
+            method = RequestMethod.POST,
+            value = "/review/assignAutomatically"
+    )
+    public ResponseEntity<Void> assignAutomatically(@Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
+                                                        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
+                                                    @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
+                                                        @Valid @RequestParam(value = "userId", required = false) Integer userId) {
+        CheckSubjectBuilder builder = new CheckSubjectBuilder();
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId)));
+        builder.setUserId(userId);
+        builder.setTrack(trackId);
+        CheckSubject checkSubject = builder.build();
+
+        ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
+        if (responseStatus != null) {
+            return responseStatus;
+        }
+
+        if (!reviewService.verifyPcChair(userId, trackId)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<List<Integer>> trackPapers = trackPhaseService.getTrackPapers(trackId);
+        if (trackPapers.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        List<Paper> papers = paperService.findAllPapersForIdList(trackPapers.get());
+        Map<Integer, List<Integer>> conflicts = paperService
+                .getConflictsPerReviewers(trackPapers.get());
+        List<ReviewerPreferences> prefs = reviewerPreferencesService
+                .getPreferencesForTrack(trackPapers.get());
+        List<Review> reviews = ReviewUtils.assignReviewsAutomatically(papers, conflicts, prefs);
         reviewService.saveReviews(reviews);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
@@ -295,7 +321,7 @@ public class ReviewController implements ReviewApi {
         if (responseStatus != null) {
             return responseStatus;
         }
-        Optional<String> deadline = reviewService.getTrackDeadline(trackId, new RestTemplate());
+        Optional<String> deadline = reviewService.getTrackDeadline(trackId);
         return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
