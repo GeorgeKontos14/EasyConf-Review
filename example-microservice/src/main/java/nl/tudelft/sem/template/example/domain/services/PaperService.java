@@ -1,12 +1,10 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import javax.persistence.criteria.CriteriaBuilder;
+import java.util.*;
+import nl.tudelft.sem.template.example.domain.models.Reviewer;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
+import nl.tudelft.sem.template.example.domain.repositories.ReviewerRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.responses.SubmissionPaperIdsResponse;
 import nl.tudelft.sem.template.model.Comment;
@@ -26,6 +24,7 @@ public class PaperService {
     private final transient ReviewService reviewService;
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
+    private final transient ReviewerRepository reviewerRepository;
     private RestTemplate restTemplate;
 
     /**
@@ -37,11 +36,12 @@ public class PaperService {
      * @param commentRepository CommentRepository reference
      */
     public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository,
-                        CommentRepository commentRepository, RestTemplate restTemplate) {
+                        CommentRepository commentRepository, ReviewerRepository reviewerRepository, RestTemplate restTemplate) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
         this.userService = userService;
         this.reviewService = reviewService;
+        this.reviewerRepository = reviewerRepository;
         this.restTemplate = restTemplate;
     }
 
@@ -76,6 +76,34 @@ public class PaperService {
         }
         return Optional.ofNullable(result.getBody());
     }
+
+    /**
+     * Method that retrieves the conflicts of interest per reviewer
+     * for the papers of a given track
+     *
+     * @param paperIds the ids of the papers
+     * @return the map of the conflicts of interest
+     */
+    public Map<Integer, List<Integer>> getConflictsPerReviewers(List<Integer> paperIds) {
+        Map<Integer, List<Integer>> conflictsOfInterest = new HashMap<>();
+        List<Reviewer> reviewers = reviewerRepository.findAll();
+        for (Reviewer r: reviewers)
+            conflictsOfInterest.put(r.getId(), new ArrayList<>());
+        for (Integer id: paperIds) {
+            Optional<PaperResponse> response = getPaperObjectFromSubmissions(id);
+            if (response.isEmpty())
+                continue;
+            for (Integer conflict: response.get().getConflictsOfInterest()) {
+                if (!conflictsOfInterest.containsKey(conflict))
+                    conflictsOfInterest.put(conflict, new ArrayList<>());
+                for (Integer author: response.get().getAuthors())
+                    if (!conflictsOfInterest.get(conflict).contains(author))
+                        conflictsOfInterest.get(conflict).add(author);
+            }
+        }
+        return conflictsOfInterest;
+    }
+
 
     /**
      * Gets all the comments on a single paper.

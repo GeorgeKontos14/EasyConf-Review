@@ -1,31 +1,20 @@
 package nl.tudelft.sem.template.example.domain.services;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javassist.bytecode.LineNumberAttribute;
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PcChairRepository;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.util.DateUtils;
 import nl.tudelft.sem.template.model.Comment;
-import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
-import nl.tudelft.sem.template.model.ReviewerPreferences;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
@@ -34,6 +23,7 @@ public class ReviewService {
     private final transient PcChairRepository pcChairRepository;
     private final transient CommentRepository commentRepository;
     private final RestTemplate restTemplate;
+    private static int id;
     /**
      * Constructor for the Review Service.
      *
@@ -46,6 +36,7 @@ public class ReviewService {
         this.pcChairRepository = pcChairRepository;
         this.commentRepository = commentRepository;
         this.restTemplate = restTemplate;
+        id = 1;
     }
 
     /**
@@ -54,8 +45,12 @@ public class ReviewService {
      * @param reviews the list of reviews to be stored.
      */
     public void saveReviews(List<Review> reviews) {
+        for (Review r: reviews)
+            if (r.getId() == null)
+                r.setId(id++);
         reviewRepository.saveAll(reviews);
     }
+
 
     /**
      * Method that retrieves all reviews assigned to a specific reviewer.
