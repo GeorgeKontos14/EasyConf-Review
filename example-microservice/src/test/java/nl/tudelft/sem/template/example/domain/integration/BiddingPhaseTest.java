@@ -57,8 +57,6 @@ public class BiddingPhaseTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private PcChairRepository pcChairRepository;
 
     @Autowired
     private ReviewerPreferencesRepository reviewerPreferencesRepository;
@@ -84,8 +82,7 @@ public class BiddingPhaseTest {
     }
 
 
-    private Reviewer buildReviewer(int id, List<Integer> reviews, List<Integer> preferences)
-    {
+    private Reviewer buildReviewer(int id, List<Integer> reviews, List<Integer> preferences) {
         Reviewer reviewer = new Reviewer();
         reviewer.setId(id);
         reviewer.setReviews(reviews);
@@ -108,32 +105,31 @@ public class BiddingPhaseTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-        given(restTemplate.exchange("localhost:8082/1/deadline", HttpMethod.GET, entity, String.class))
-            .willReturn(ResponseEntity.of(Optional.of("2024-10-10")));
+        given(restTemplate.exchange("localhost:8082/1/deadline", HttpMethod.GET, entity, String.class)).willReturn(
+            ResponseEntity.of(Optional.of("2024-10-10")));
 
-        ResultActions biddingDeadline = mockMvc.perform(get("/review/getBiddingDeadline")
-            .contentType(MediaType.APPLICATION_JSON)
-            .param("trackID", Integer.toString(1))
-            .param("userID", Integer.toString(1)));
+        ResultActions biddingDeadline = mockMvc.perform(
+            get("/review/getBiddingDeadline").contentType(MediaType.APPLICATION_JSON).param("trackID", Integer.toString(1))
+                .param("userID", Integer.toString(1)));
         biddingDeadline.andExpect(status().isAccepted());
         biddingDeadline.andExpect(jsonPath("$").value("2024-10-17"));
 
 
         SubmissionPaperIdsResponse submissionPaperIdsResponse = new SubmissionPaperIdsResponse();
-        submissionPaperIdsResponse.setSubmissionIds(List.of(1,2,3));
-        given(restTemplate.exchange("localhost:8082/tracks/1/submissions", HttpMethod.GET, entity, SubmissionPaperIdsResponse.class))
-            .willReturn(ResponseEntity.of(Optional.of(submissionPaperIdsResponse)));
+        submissionPaperIdsResponse.setSubmissionIds(List.of(1, 2, 3));
+        given(restTemplate.exchange("localhost:8082/tracks/1/submissions", HttpMethod.GET, entity,
+            SubmissionPaperIdsResponse.class)).willReturn(ResponseEntity.of(Optional.of(submissionPaperIdsResponse)));
 
         PaperResponse paperResponse = new PaperResponse("title1", List.of(), null, "abstract1", null, null, null, null);
         PaperResponse paperResponse2 = new PaperResponse("title2", List.of(), null, "abstract2", null, null, null, null);
         PaperResponse paperResponse3 = new PaperResponse("title3", List.of(), null, "abstract3", null, null, null, null);
-        submissionPaperIdsResponse.setSubmissionIds(List.of(1,2,3));
-        given(restTemplate.exchange("localhost:8082/submissions/1/info", HttpMethod.GET, entity, PaperResponse.class))
-            .willReturn(ResponseEntity.of(Optional.of(paperResponse)));
-        given(restTemplate.exchange("localhost:8082/submissions/2/info", HttpMethod.GET, entity, PaperResponse.class))
-            .willReturn(ResponseEntity.of(Optional.of(paperResponse2)));
-        given(restTemplate.exchange("localhost:8082/submissions/3/info", HttpMethod.GET, entity, PaperResponse.class))
-            .willReturn(ResponseEntity.of(Optional.of(paperResponse3)));
+        submissionPaperIdsResponse.setSubmissionIds(List.of(1, 2, 3));
+        given(restTemplate.exchange("localhost:8082/submissions/1/info", HttpMethod.GET, entity,
+            PaperResponse.class)).willReturn(ResponseEntity.of(Optional.of(paperResponse)));
+        given(restTemplate.exchange("localhost:8082/submissions/2/info", HttpMethod.GET, entity,
+            PaperResponse.class)).willReturn(ResponseEntity.of(Optional.of(paperResponse2)));
+        given(restTemplate.exchange("localhost:8082/submissions/3/info", HttpMethod.GET, entity,
+            PaperResponse.class)).willReturn(ResponseEntity.of(Optional.of(paperResponse3)));
 
 
         /// Functionality that retrieves all the Paper's for a Reviewer
@@ -152,25 +148,22 @@ public class BiddingPhaseTest {
     }
 
     private void checkTitleAbstractRetrieval(int paperId, int userId) throws Exception {
-        String title = "title"+Integer.toString(paperId);
-        String _abstract = "abstract"+ Integer.toString(paperId);
-        ResultActions response = mockMvc.perform(get("/paper/getTitleAndAbstract")
-            .contentType(MediaType.APPLICATION_JSON)
-            .param("paperID", Integer.toString(paperId))
-            .param("userID", Integer.toString(userId)));
+        String title = "title" + Integer.toString(paperId);
+        String _abstract = "abstract" + Integer.toString(paperId);
+        ResultActions response = mockMvc.perform(get("/paper/getTitleAndAbstract").contentType(MediaType.APPLICATION_JSON)
+            .param("paperID", Integer.toString(paperId)).param("userID", Integer.toString(userId)));
         response.andExpect(status().isOk());
-        String expectedString = "{\"abstract\":\""+ _abstract + "\",\"title\":\""+title+"\"}";
+        String expectedString = "{\"abstract\":\"" + _abstract + "\",\"title\":\"" + title + "\"}";
         response.andExpect(content().string(expectedString));
     }
 
     void storeEntity(int id, int reviewerId, int paperId, ReviewerPreferences.ReviewerPreferenceEnum preferenceEnum)
         throws Exception {
         PreferenceEntity preference = buildPref(id, paperId, reviewerId, preferenceEnum);
-        ResultActions storedStatus = mockMvc.perform(post("/paper/postPreferenceScore")
-            .contentType(MediaType.APPLICATION_JSON)
-            .param("reviewer_id", Integer.toString(reviewerId))
-            .param("paper_id", Integer.toString(paperId))
-            .param("preference", PreferenceEntity.changeEnumValueToString(preferenceEnum)));
+        ResultActions storedStatus = mockMvc.perform(
+            post("/paper/postPreferenceScore").contentType(MediaType.APPLICATION_JSON)
+                .param("reviewer_id", Integer.toString(reviewerId)).param("paper_id", Integer.toString(paperId))
+                .param("preference", PreferenceEntity.changeEnumValueToString(preferenceEnum)));
         storedStatus.andExpect(status().isOk());
         assertThat(reviewerPreferencesRepository.existsById(id)).isEqualTo(true);
     }
