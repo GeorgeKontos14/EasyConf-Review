@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +34,6 @@ import org.springframework.web.client.RestTemplate;
 
 public class PaperControllerTest {
 
-    private RestTemplate restTemplate;
     private PaperService paperService;
     private UserService userService;
     private ReviewerPreferencesService reviewerPreferencesService;
@@ -153,7 +153,8 @@ public class PaperControllerTest {
         PaperResponse paperResponse = new PaperResponse("hello", List.of(1, 2, 3),
             4, "abstr", List.of("key1", "key2"), "link1", List.of(1, 2, 3), "link2");
         when(userService.validateUser(4)).thenReturn(true);
-        when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class)))
+       // when(restTemplate.getForObject(anyString(), any())).thenReturn(new ResponseEntity<PaperResponse>(paperResponse, HttpStatus.OK));
+        when(paperService.getPaperObjectFromSubmissions(anyInt()))
             .thenReturn(Optional.of(paperResponse));
         when(paperService.isExistingPaper(anyInt())).thenReturn(true);
         ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(3, 4);
@@ -166,7 +167,7 @@ public class PaperControllerTest {
     @Test
     void paperGetTitleAndAbstractError() {
         when(userService.validateUser(4)).thenReturn(true);
-        when(paperService.getPaperObjectFromSubmissions(anyInt(), any(RestTemplate.class)))
+        when(paperService.getPaperObjectFromSubmissions(anyInt()))
             .thenReturn(Optional.empty());
         ResponseEntity<String> response = paperController.paperGetTitleAndAbstractGet(3, 4);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);

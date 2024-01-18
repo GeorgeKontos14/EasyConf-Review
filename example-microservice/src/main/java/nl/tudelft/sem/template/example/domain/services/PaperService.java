@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import javax.persistence.criteria.CriteriaBuilder;
 import nl.tudelft.sem.template.example.domain.repositories.CommentRepository;
 import nl.tudelft.sem.template.example.domain.repositories.PaperRepository;
-import nl.tudelft.sem.template.example.domain.repositories.ReviewRepository;
 import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
+import nl.tudelft.sem.template.example.domain.responses.SubmissionPaperIdsResponse;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
 import org.springframework.http.HttpEntity;
@@ -25,6 +26,7 @@ public class PaperService {
     private final transient ReviewService reviewService;
     private final transient PaperRepository paperRepository;
     private final transient CommentRepository commentRepository;
+    private RestTemplate restTemplate;
 
     /**
      * PaperService constructor.
@@ -35,11 +37,12 @@ public class PaperService {
      * @param commentRepository CommentRepository reference
      */
     public PaperService(UserService userService, ReviewService reviewService, PaperRepository paperRepository,
-                        CommentRepository commentRepository) {
+                        CommentRepository commentRepository, RestTemplate restTemplate) {
         this.paperRepository = paperRepository;
         this.commentRepository = commentRepository;
         this.userService = userService;
         this.reviewService = reviewService;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -56,10 +59,9 @@ public class PaperService {
      * Gets the paper object from the submission.
      *
      * @param paperId to get
-     * @param restTemplate to follow
      * @return the optional of a paper response
      */
-    public Optional<PaperResponse> getPaperObjectFromSubmissions(int paperId, RestTemplate restTemplate) {
+    public Optional<PaperResponse> getPaperObjectFromSubmissions(int paperId) {
         String submissionsUri = "localhost:8082/submissions/" + paperId + "/info";
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -155,6 +157,33 @@ public class PaperService {
             papersForReviewer.add(abstracted);
         }
         return papersForReviewer;
+    }
+
+    public Optional<List<Integer>> getAllPaperIdsForTrack(int trackId) {
+        String submissionsUri = "localhost:8082/tracks/" + trackId + "/submissions";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        ResponseEntity<SubmissionPaperIdsResponse> response;
+        try {
+            response = restTemplate.exchange(submissionsUri, HttpMethod.GET, entity, SubmissionPaperIdsResponse.class);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+        SubmissionPaperIdsResponse paperIdsResponse = response.getBody();
+        List<Integer> paperIds = null;
+        if(paperIdsResponse == null)
+            return Optional.empty();
+        paperIds = paperIdsResponse.getSubmissionIds();
+        if(paperIds == null)
+            return Optional.empty();
+        for(int id : paperIds) {
+            Paper p = new Paper();
+            p.setId(id);
+            paperRepository.save(p);
+        }
+        return Optional.of(paperIds);
     }
 
 }
