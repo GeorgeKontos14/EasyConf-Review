@@ -15,6 +15,7 @@ import nl.tudelft.sem.template.example.domain.services.ReviewService;
 import nl.tudelft.sem.template.example.domain.services.ReviewerPreferencesService;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import nl.tudelft.sem.template.example.domain.services.UserService;
+import nl.tudelft.sem.template.example.domain.util.ReviewUtils;
 import nl.tudelft.sem.template.example.domain.validator.ChainManager;
 import nl.tudelft.sem.template.model.Comment;
 import nl.tudelft.sem.template.model.Paper;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 
 @RestController
@@ -176,8 +176,12 @@ public class ReviewController implements ReviewApi {
         if (trackPapers.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         List<Paper> papers = paperService.findAllPapersForIdList(trackPapers.get());
-        Map<Integer, List<Integer>> conflicts = new HashMap<>();
-        List<ReviewerPreferences> prefs = new ArrayList<>();
+        Map<Integer, List<Integer>> conflicts = paperService
+                .getConflictsPerReviewers(trackPapers.get());
+        List<ReviewerPreferences> prefs = reviewerPreferencesService
+                .getPreferencesForTrack(trackPapers.get());
+        List<Review> reviews = ReviewUtils.assignReviewsAutomatically(papers, conflicts, prefs);
+        reviewService.saveReviews(reviews);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 

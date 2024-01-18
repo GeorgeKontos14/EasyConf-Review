@@ -1,5 +1,6 @@
 package nl.tudelft.sem.template.example.domain.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.repositories.ReviewerPreferencesRepository;
@@ -50,4 +51,18 @@ public class ReviewerPreferencesService {
     public PreferenceEntity saveReviewerPreference(PreferenceEntity preferenceEntity) {
         return reviewerPreferencesRepository.save(preferenceEntity);
     }
+
+    /**
+     * Retrieves all the reviewer preferences for a specified track.
+     *
+     * @param paperIDs the IDs of the papers in the track
+     * @return the reviewer preferences for those papers
+     */
+    public List<ReviewerPreferences> getPreferencesForTrack(List<Integer> paperIDs) {
+        List<ReviewerPreferences> res = new ArrayList<>();
+        for (Integer p: paperIDs)
+            res.addAll(getPreferencesForPaper(p));
+        return res;
+    }
+
 }
