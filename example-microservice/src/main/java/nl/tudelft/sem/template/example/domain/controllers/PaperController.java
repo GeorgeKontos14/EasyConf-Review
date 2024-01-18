@@ -207,7 +207,7 @@ public class PaperController implements PaperApi {
      */
     @Override
     public ResponseEntity<List<Paper>> paperGetAllPapersForIDGet(@NotNull @Parameter(name = "reviewer_id", description =
-        "The ID of the paper we want to see the reviewer preferences for", required = true,
+        "The ID of the reviewer we want to see the reviewer preferences for", required = true,
         in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviewer_id") Integer reviewerId) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
