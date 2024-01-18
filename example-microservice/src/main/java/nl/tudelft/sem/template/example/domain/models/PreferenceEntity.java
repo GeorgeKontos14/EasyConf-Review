@@ -5,6 +5,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,7 @@ import nl.tudelft.sem.template.model.ReviewerPreferences;
 @Entity
 public class PreferenceEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column
@@ -57,6 +60,16 @@ public class PreferenceEntity {
             return ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW;
         } else {
             return ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL;
+        }
+    }
+
+    public static String changeEnumValueToString(ReviewerPreferences.ReviewerPreferenceEnum preference) {
+        if (Objects.equals(preference, ReviewerPreferences.ReviewerPreferenceEnum.CAN_REVIEW)) {
+            return "Can review";
+        } else if (Objects.equals(preference, ReviewerPreferences.ReviewerPreferenceEnum.CANNOT_REVIEW)) {
+            return "Cannot review";
+        } else {
+            return "Neutral";
         }
     }
 
