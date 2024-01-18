@@ -52,7 +52,7 @@ public class ReviewServiceTest {
         pcChairRepository = Mockito.mock(PcChairRepository.class);
         reviewerRepository = Mockito.mock(ReviewerRepository.class);
         commentRepository = Mockito.mock(CommentRepository.class);
-        sut = new ReviewService(repo, pcChairRepository, commentRepository);
+        sut = new ReviewService(repo, pcChairRepository, commentRepository, restTemplate);
         Paper p1 = new Paper();
         p1.setId(1);
         p1.setAuthors(Arrays.asList(1, 2, 3, 4));
@@ -112,7 +112,7 @@ public class ReviewServiceTest {
         Mockito.when(restTemplate
                         .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(ResponseEntity.of(Optional.of("2024-10-10")));
-        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        Optional<String> result = sut.getTrackDeadline(2);
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get()).isEqualTo("2024-10-17");
     }
@@ -125,7 +125,7 @@ public class ReviewServiceTest {
         Mockito.when(restTemplate
                         .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class)))
                 .thenThrow(IllegalArgumentException.class);
-        Optional<String> result = sut.getTrackDeadline(2, restTemplate);
+        Optional<String> result = sut.getTrackDeadline(2);
         assertThat(result.isEmpty()).isTrue();
     }
 

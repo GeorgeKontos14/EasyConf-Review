@@ -48,7 +48,7 @@ class PaperServiceTest {
         commentRepository = Mockito.mock(CommentRepository.class);
         reviewService = Mockito.mock(ReviewService.class);
         userService = Mockito.mock(UserService.class);
-        paperService = new PaperService(userService, reviewService, paperRepository, commentRepository);
+        paperService = new PaperService(userService, reviewService, paperRepository, commentRepository, restTemplate );
     }
 
     @Test
@@ -73,7 +73,7 @@ class PaperServiceTest {
         ResponseEntity<PaperResponse> result = ResponseEntity.of(Optional.of(paperResponse));
         Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 eq(PaperResponse.class))).thenReturn(result);
-        Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3, restTemplate);
+        Optional<PaperResponse> response = paperService.getPaperObjectFromSubmissions(3);
         assertThat(response).isEqualTo(Optional.of(paperResponse));
     }
 
@@ -82,7 +82,7 @@ class PaperServiceTest {
         RuntimeException e = Mockito.mock(RuntimeException.class);
         Mockito.when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 eq(PaperResponse.class))).thenThrow(e);
-        Optional<PaperResponse> res = paperService.getPaperObjectFromSubmissions(1, restTemplate);
+        Optional<PaperResponse> res = paperService.getPaperObjectFromSubmissions(1);
         assertThat(res.isEmpty()).isTrue();
         Mockito.verify(e).printStackTrace();
     }

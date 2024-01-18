@@ -627,13 +627,14 @@ paths:
           description: The user ID, used for verification
           schema:
             type: integer
-        - name: reviews
-          in: query
-          description: The review objects with papers assigned to reviewers
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Review'
+      requestBody:
+        description: The review objects with papers assigned to reviewers
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Review'
       responses:
         200:
           description: Successful Response

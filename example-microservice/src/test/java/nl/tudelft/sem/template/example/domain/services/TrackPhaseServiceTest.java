@@ -26,14 +26,14 @@ public class TrackPhaseServiceTest {
     public void setup() {
         trackPhaseRepository = Mockito.mock(TrackPhaseRepository.class);
         restTemplate = Mockito.mock(RestTemplate.class);
-        sut = new TrackPhaseService(trackPhaseRepository);
+        sut = new TrackPhaseService(trackPhaseRepository, restTemplate);
     }
 
     @Test
     public void getTrackPapersExceptionTest() {
         Mockito.when(restTemplate.getForObject(anyString(), any()))
                 .thenThrow(IllegalArgumentException.class);
-        Optional<List<Integer>> result = sut.getTrackPapers(1, restTemplate);
+        Optional<List<Integer>> result = sut.getTrackPapers(1);
         assertThat(result.isEmpty()).isTrue();
     }
 
@@ -41,7 +41,7 @@ public class TrackPhaseServiceTest {
     public void getTrackPhaseNullResponseTest() {
         Mockito.when(restTemplate.getForObject(anyString(), any()))
                 .thenReturn(null);
-        Optional<List<Integer>> result = sut.getTrackPapers(1, restTemplate);
+        Optional<List<Integer>> result = sut.getTrackPapers(1);
         assertThat(result.isEmpty()).isTrue();
     }
 
@@ -49,7 +49,7 @@ public class TrackPhaseServiceTest {
     public void getTrackPhaseOkTest() {
         Mockito.when(restTemplate.getForObject(anyString(), any()))
                 .thenReturn(new TrackPhaseService.IntegerList(Arrays.asList(1, 2, 34)));
-        Optional<List<Integer>> result = sut.getTrackPapers(1, restTemplate);
+        Optional<List<Integer>> result = sut.getTrackPapers(1);
         assertThat(result.isPresent()).isTrue();
         assertThat(result.get()).isEqualTo(Arrays.asList(1, 2, 34));
     }

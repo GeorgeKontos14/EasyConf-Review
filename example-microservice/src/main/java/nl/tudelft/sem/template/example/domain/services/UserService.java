@@ -3,7 +3,7 @@ package nl.tudelft.sem.template.example.domain.services;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class  UserService {
 
     /**
      * Function that authenticates a user with given id.
