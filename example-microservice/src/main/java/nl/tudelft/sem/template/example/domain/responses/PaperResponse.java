@@ -3,10 +3,9 @@ package nl.tudelft.sem.template.example.domain.responses;
 import java.util.List;
 import lombok.Getter;
 
+@Getter
 public class PaperResponse {
-    @Getter
     String title;
-    @Getter
     List<Integer> authors;
 
     Integer trackId;
@@ -14,8 +13,6 @@ public class PaperResponse {
 
     List<String> keywords;
     String replicationPackageLink;
-
-    @Getter
     List<Integer> conflictsOfInterest;
 
     String paperDownloadLink;

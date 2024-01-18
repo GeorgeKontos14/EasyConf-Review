@@ -291,4 +291,60 @@ public class AssignmentPhaseIntegrationTest {
                 .content(new ObjectMapper().writeValueAsBytes(changed)));
         change.andExpect(status().isAccepted());
     }
+
+    @Test
+    public void startBiddingForNonExistingTrack() throws Exception {
+        makeChair();
+        given(restTemplate.getForObject("localhost:8081/tracks/1/submissions", TrackPhaseService.IntegerList.class))
+                .willThrow(RuntimeException.class);
+        ResultActions startBidding = mockMvc.perform(get("/review/startBiddingForTrack")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("trackID", Integer.toString(1)));
+        startBidding.andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void setBiddingDeadlineNonExistingTrack() throws Exception {
+        makeChair();
+        startBidding();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        given(restTemplate.exchange("localhost:8082/1/deadline", HttpMethod.GET, entity, String.class))
+                .willThrow(RuntimeException.class);
+        ResultActions biddingDeadline = mockMvc.perform(get("/review/getBiddingDeadline")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("trackID", Integer.toString(1))
+                .param("userID", Integer.toString(1)));
+        biddingDeadline.andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void assignAutomaticallyUnauthorizedTest() throws Exception {
+        makeChair();
+        startBidding();
+        biddingDeadline();
+
+        ResultActions assign = mockMvc.perform(post("/review/assignAutomatically")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("trackID", Integer.toString(3))
+                .param("userId", Integer.toString(1)));
+        assign.andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void assignAutomaticallyNotFoundTest() throws Exception {
+        makeChair();
+        startBidding();
+        biddingDeadline();
+
+        given(restTemplate.getForObject("localhost:8081/tracks/2/submissions", TrackPhaseService.IntegerList.class))
+                .willThrow(RuntimeException.class);
+        ResultActions assign = mockMvc.perform(post("/review/assignAutomatically")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("trackID", Integer.toString(2))
+                .param("userId", Integer.toString(1)));
+        assign.andExpect(status().isNotFound());
+    }
 }
