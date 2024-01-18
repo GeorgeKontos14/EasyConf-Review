@@ -151,7 +151,7 @@ public class ReviewController implements ReviewApi {
 
     @RequestMapping(
             method = RequestMethod.POST,
-            value = "review/assignAutomatically"
+            value = "/review/assignAutomatically"
     )
     public ResponseEntity<Void> assignAutomatically(@Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
                                                         @Valid @RequestParam(value = "trackID", required = false) Integer trackId,

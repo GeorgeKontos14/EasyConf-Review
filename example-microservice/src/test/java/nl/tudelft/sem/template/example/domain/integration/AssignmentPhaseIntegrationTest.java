@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.tudelft.sem.template.example.domain.models.PcChair;
 import nl.tudelft.sem.template.example.domain.models.PreferenceEntity;
 import nl.tudelft.sem.template.example.domain.repositories.*;
+import nl.tudelft.sem.template.example.domain.responses.PaperResponse;
 import nl.tudelft.sem.template.example.domain.services.TrackPhaseService;
 import nl.tudelft.sem.template.model.Paper;
 import nl.tudelft.sem.template.model.Review;
@@ -76,9 +77,9 @@ public class AssignmentPhaseIntegrationTest {
         return review;
     }
 
-    private PcChair buildPCChair(int id, List<Integer> tracks) {
+    private PcChair buildPCChair(List<Integer> tracks) {
         PcChair res = new PcChair(tracks);
-        res.setId(id);
+        res.setId(1);
         return res;
     }
 
@@ -109,12 +110,12 @@ public class AssignmentPhaseIntegrationTest {
                 ReviewerPreferences.ReviewerPreferenceEnum.NEUTRAL));
     }
 
-    @Test
-    public void manualAssignmentTest() throws Exception {
-        //Create the PC chair
-        PcChair chair = buildPCChair(1, Arrays.asList(1,2));
+    private void makeChair() {
+        PcChair chair = buildPCChair(Arrays.asList(1,2));
         pcChairRepository.save(chair);
-        // The PC chair starts the bidding phase for a track
+    }
+
+    private void startBidding() throws Exception {
         given(restTemplate.getForObject("localhost:8081/tracks/1/submissions", TrackPhaseService.IntegerList.class))
                 .willReturn(new TrackPhaseService.IntegerList(Arrays.asList(1,2,3)));
         ResultActions startBidding = mockMvc.perform(get("/review/startBiddingForTrack")
@@ -122,8 +123,9 @@ public class AssignmentPhaseIntegrationTest {
                 .param("trackID", Integer.toString(1)));
         startBidding.andExpect(status().isAccepted());
         assertThat(trackPhaseRepository.existsById(1)).isTrue();
+    }
 
-        // The PC chair gets the bidding deadline
+    private void biddingDeadline() throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
@@ -135,12 +137,32 @@ public class AssignmentPhaseIntegrationTest {
                 .param("userID", Integer.toString(1)));
         biddingDeadline.andExpect(status().isAccepted());
         biddingDeadline.andExpect(jsonPath("$").value("2024-10-17"));
+    }
 
-        // Until the deadline, the reviewers post their preferences
-        addPrefs();
+    private void savePapers() {
         paperRepository.save(buildPaper(1,Arrays.asList(1,2)));
         paperRepository.save(buildPaper(2,Arrays.asList(1,2)));
         paperRepository.save(buildPaper(3,Arrays.asList(1,2)));
+    }
+
+
+
+    @Test
+    public void manualAssignmentTest() throws Exception {
+        //Create the PC chair
+        makeChair();
+
+        // The PC chair starts the bidding phase for a track
+        startBidding();
+
+        // The PC chair gets the bidding deadline
+        biddingDeadline();
+
+        // Until the deadline, the reviewers post their preferences
+        addPrefs();
+
+        savePapers();
+
         ResultActions prefs1 = mockMvc.perform(get("/paper/getPreferencesByPaper")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("paperID", Integer.toString(1))
@@ -208,6 +230,60 @@ public class AssignmentPhaseIntegrationTest {
         changed.add(reviews.get(8));
         changed.get(0).setReviewerId(3);
         changed.get(1).setReviewerId(1);
+        ResultActions change = mockMvc.perform(put("/review/changeAssignments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("trackID", Integer.toString(1))
+                .param("userId", Integer.toString(1))
+                .content(new ObjectMapper().writeValueAsBytes(changed)));
+        change.andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void automaticAssignmentTest() throws Exception {
+        //Create the PC chair
+        makeChair();
+
+        // The PC chair starts the bidding phase for a track
+        startBidding();
+
+        // The PC chair gets the bidding deadline
+        biddingDeadline();
+
+        // Until the deadline, the reviewers post their preferences
+        addPrefs();
+
+        savePapers();
+
+        PaperResponse r1 = new PaperResponse("a", Arrays.asList(1,2), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(1,2,4), "a");
+        PaperResponse r2 = new PaperResponse("a", Arrays.asList(3,4), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(1,3,5), "a");
+        PaperResponse r3 = new PaperResponse("a", Arrays.asList(2, 5), 1, "a",
+                Collections.emptyList(), "a", Arrays.asList(2,4, 5), "a");
+
+        // The PC Chair assigns reviews automatically
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        given(restTemplate.exchange("localhost:8082/submissions/1/info", HttpMethod.GET,
+                entity, PaperResponse.class))
+                .willReturn(ResponseEntity.of(Optional.of(r1)));
+        given(restTemplate.exchange("localhost:8082/submissions/2/info", HttpMethod.GET,
+                entity, PaperResponse.class))
+                .willReturn(ResponseEntity.of(Optional.of(r2)));
+        given(restTemplate.exchange("localhost:8082/submissions/3/info", HttpMethod.GET,
+                entity, PaperResponse.class))
+                .willReturn(ResponseEntity.of(Optional.of(r3)));
+        ResultActions assign = mockMvc.perform(post("/review/assignAutomatically")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("trackID", Integer.toString(1))
+                        .param("userId", Integer.toString(1)));
+        assign.andExpect(status().isAccepted());
+
+        // The PC chair manually changes reviews
+        List<Review> changed = new ArrayList<>();
+        changed.add(buildReview(1,1,1));
+        changed.add(buildReview(2,2,2));
         ResultActions change = mockMvc.perform(put("/review/changeAssignments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("trackID", Integer.toString(1))
