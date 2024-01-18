@@ -80,30 +80,23 @@ public class ReviewController implements ReviewApi {
         }
 
         Optional<List<Integer>> papersOpt = trackPhaseService
-            .getTrackPapers(trackId, new RestTemplate());
+            .getTrackPapers(trackId);
         if (papersOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         TrackPhase phase = new TrackPhase(papersOpt.get());
+        phase.setId(trackId);
         trackPhaseService.saveTrackPhase(phase);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
 
     @Override
-    public ResponseEntity<Void> reviewAssignPapersPost(
-        @Parameter(name = "trackID", description = "The id of the track", in = ParameterIn.QUERY)
-        @Valid @RequestParam(value = "trackID", required = false) Integer trackId,
-        @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
-        @Valid @RequestParam(value = "userId", required = false) Integer userId,
-        @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
-            required = false) List<@Valid Review> reviews
-    ) {
+    public ResponseEntity<Void> reviewAssignPapersPost(Integer trackID, Integer userId, List<Review> review) {
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
-        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackId, userId, reviews)));
+        builder.setInputParameters(new ArrayList<>(Arrays.asList(trackID, userId, review)));
         builder.setUserId(userId);
-        builder.setTrack(trackId);
+        builder.setTrack(trackID);
         CheckSubject checkSubject = builder.build();
 
         ResponseEntity<Void> responseStatus = chainManager.evaluate(checkSubject);
@@ -111,7 +104,7 @@ public class ReviewController implements ReviewApi {
         if (responseStatus != null) {
             return responseStatus;
         }
-        reviewService.saveReviews(reviews);
+        reviewService.saveReviews(review);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
@@ -137,7 +130,7 @@ public class ReviewController implements ReviewApi {
         @Parameter(name = "userId", description = "The user ID, used for verification", in = ParameterIn.QUERY)
         @Valid @RequestParam(value = "userId", required = false) Integer userId,
         @Parameter(name = "reviews", description = "The review objects with papers assigned to reviewers",
-            in = ParameterIn.QUERY) @Valid @RequestParam(value = "reviews",
+            in = ParameterIn.QUERY) @Valid @RequestBody(
             required = false) List<@Valid Review> reviews) {
 
         CheckSubjectBuilder builder = new CheckSubjectBuilder();
@@ -295,7 +288,7 @@ public class ReviewController implements ReviewApi {
         if (responseStatus != null) {
             return responseStatus;
         }
-        Optional<String> deadline = reviewService.getTrackDeadline(trackId, new RestTemplate());
+        Optional<String> deadline = reviewService.getTrackDeadline(trackId);
         return deadline.map(s -> new ResponseEntity<>(s, HttpStatus.ACCEPTED))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }

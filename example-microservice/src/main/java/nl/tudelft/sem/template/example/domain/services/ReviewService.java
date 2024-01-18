@@ -33,8 +33,7 @@ public class ReviewService {
     private final transient ReviewRepository reviewRepository;
     private final transient PcChairRepository pcChairRepository;
     private final transient CommentRepository commentRepository;
-
-
+    private final RestTemplate restTemplate;
     /**
      * Constructor for the Review Service.
      *
@@ -42,10 +41,11 @@ public class ReviewService {
      * @param pcChairRepository the repository containing pcChairs
      */
     public ReviewService(ReviewRepository reviewRepository, PcChairRepository pcChairRepository,
-                         CommentRepository commentRepository) {
+                         CommentRepository commentRepository, RestTemplate restTemplate) {
         this.reviewRepository = reviewRepository;
         this.pcChairRepository = pcChairRepository;
         this.commentRepository = commentRepository;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -132,11 +132,10 @@ public class ReviewService {
      * Method that gets the track deadline from the users' microservice.
      *
      * @param trackId      the ID of the track.
-     * @param restTemplate the rest template.
      * @return an optional containing the deadline; if any.
      */
-    public Optional<String> getTrackDeadline(int trackId, RestTemplate restTemplate) {
-        String submissionsUri = "localhost:8082" + trackId + "/deadline";
+    public Optional<String> getTrackDeadline(int trackId) {
+        String submissionsUri = "localhost:8082/" + trackId + "/deadline";
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
